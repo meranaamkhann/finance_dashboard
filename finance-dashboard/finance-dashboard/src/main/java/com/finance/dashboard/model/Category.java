@@ -1,0 +1,9 @@
+package com.finance.dashboard.model;
+
+public enum Category {
+    // Income
+    SALARY, FREELANCE, INVESTMENT, RENTAL, BONUS, OTHER_INCOME,
+    // Expense
+    HOUSING, FOOD, TRANSPORTATION, HEALTHCARE, UTILITIES,
+    ENTERTAINMENT, EDUCATION, INSURANCE, SAVINGS, OTHER_EXPENSE
+}
