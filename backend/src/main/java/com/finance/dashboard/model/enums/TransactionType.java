@@ -1,2 +1,5 @@
-package com.finance.dashboard.model.enums;
-public enum TransactionType { INCOME, EXPENSE }
+package com.finance.dashboard.model;
+
+public enum TransactionType {
+    INCOME, EXPENSE
+}
