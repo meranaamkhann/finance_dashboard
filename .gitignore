@@ -1,5 +1,5 @@
-# Java
-target/
+# Java / Maven
+backend/target/
 *.class
 *.jar
 *.war
@@ -12,7 +12,7 @@ application-prod.properties.local
 # IDE
 .idea/
 *.iml
-.vscode/
+.vscode/settings.json
 *.swp
 
 # Frontend

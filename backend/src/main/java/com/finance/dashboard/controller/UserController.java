@@ -49,7 +49,7 @@ public class UserController {
     }
     @GetMapping("/{id}") @PreAuthorize("hasRole('ADMIN')") @Operation(summary="Get user by ID — ADMIN")
     public ResponseEntity<ApiResponse<UserResponse>> getById(@PathVariable Long id) { return ResponseEntity.ok(ApiResponse.ok(userService.getById(id))); }
-    @GetMapping("/role/{role}") @PreAuthorize("hasRole('ADMIN')") @Operation(summary="Filter by role — ADMIN")
+    @GetMapping("/by-role/{role}") @PreAuthorize("hasRole('ADMIN')") @Operation(summary="Filter by role — ADMIN")
     public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getByRole(@PathVariable Role role, @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) { return ResponseEntity.ok(ApiResponse.ok(userService.getByRole(role,PageRequest.of(page,size)))); }
     @PutMapping("/{id}") @PreAuthorize("hasRole('ADMIN')") @Operation(summary="Update user — ADMIN")
     public ResponseEntity<ApiResponse<UserResponse>> update(@PathVariable Long id, @Valid @RequestBody UpdateUserRequest req, HttpServletRequest http) { return ResponseEntity.ok(ApiResponse.ok("Updated",userService.update(id,req,securityUtils.getCurrentUsername(),IpUtils.resolveIp(http)))); }

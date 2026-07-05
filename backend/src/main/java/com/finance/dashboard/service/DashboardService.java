@@ -1,5 +1,6 @@
 package com.finance.dashboard.service;
 import com.finance.dashboard.dto.response.*;
+import com.finance.dashboard.dto.response.WeeklyTrendResponse;
 import com.finance.dashboard.exception.BadRequestException;
 import com.finance.dashboard.model.enums.*;
 import com.finance.dashboard.repository.*;
@@ -107,4 +108,22 @@ public class DashboardService {
         if(from!=null&&to!=null&&from.isAfter(to)) throw new BadRequestException("'from' must be before 'to'");
     }
     private BigDecimal zero(BigDecimal v){return v!=null?v:BigDecimal.ZERO;}
+
+    @Transactional(readOnly=true)
+    public List<WeeklyTrendResponse> getWeeklyTrend(int weeks) {
+        Long uid = securityUtils.getCurrentUserId();
+        LocalDate from = LocalDate.now().minusWeeks(weeks);
+        LocalDate to = LocalDate.now();
+        return recordRepository.weeklyTrendByUser(uid, from, to).stream().map(r -> {
+            int year = ((Number) r[0]).intValue();
+            int week = ((Number) r[1]).intValue();
+            BigDecimal inc = r[2] != null ? new BigDecimal(r[2].toString()) : BigDecimal.ZERO;
+            BigDecimal exp = r[3] != null ? new BigDecimal(r[3].toString()) : BigDecimal.ZERO;
+            return WeeklyTrendResponse.builder()
+                    .year(year).weekOfYear(week)
+                    .weekLabel("Week " + week + " - " + year)
+                    .income(inc).expense(exp).net(inc.subtract(exp)).build();
+        }).toList();
+    }
+
 }

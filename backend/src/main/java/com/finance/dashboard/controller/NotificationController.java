@@ -23,6 +23,6 @@ public class NotificationController {
     public ResponseEntity<ApiResponse<Map<String,Long>>> unreadCount() { return ResponseEntity.ok(ApiResponse.ok(Map.of("unreadCount",notificationService.getUnreadCount()))); }
     @PatchMapping("/{id}/read") @Operation(summary="Mark notification as read")
     public ResponseEntity<ApiResponse<NotificationResponse>> markRead(@PathVariable Long id) { return ResponseEntity.ok(ApiResponse.ok("Marked read",notificationService.markRead(id))); }
-    @PatchMapping("/read-all") @Operation(summary="Mark all as read")
+    @PatchMapping("/mark-all-read") @Operation(summary="Mark all as read")
     public ResponseEntity<ApiResponse<Map<String,Integer>>> markAllRead() { return ResponseEntity.ok(ApiResponse.ok(Map.of("marked",notificationService.markAllRead()))); }
 }

@@ -93,7 +93,7 @@ export const notificationsApi = {
   getAll: (params) => api.get('/notifications', { params }),
   getUnreadCount: () => api.get('/notifications/unread-count'),
   markRead: (id) => api.patch(`/notifications/${id}/read`),
-  markAllRead: () => api.patch('/notifications/read-all'),
+  markAllRead: () => api.patch('/notifications/mark-all-read'),
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────
@@ -112,5 +112,5 @@ export const usersApi = {
 // ── Audit ─────────────────────────────────────────────────────────────────
 export const auditApi = {
   getAll: (params) => api.get('/audit', { params }),
-  getByActor: (username, params) => api.get(`/audit/actor/${username}`, { params }),
+  getByActor: (username, params) => api.get(`/audit/by-actor/${username}`, { params }),
 }

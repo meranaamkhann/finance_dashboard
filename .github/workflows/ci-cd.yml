@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build-test:
-    name: Build & Test (Backend)
+  backend-test:
+    name: Backend — Build & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,17 +18,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Run tests
-        working-directory: backend
+        working-directory: backend          # ← YOUR structure
         run: mvn clean verify -q
-      - name: Upload test results
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: backend/target/surefire-reports/
 
   frontend-build:
-    name: Build (Frontend)
+    name: Frontend — Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,13 +36,12 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: frontend/package.json
-      - name: Install & build
+      - run: npm install && npm run build
         working-directory: frontend
-        run: npm install && npm run build
 
-  docker:
-    name: Docker Build & Push
-    needs: [build-test, frontend-build]
+  docker-push:
+    name: Docker — Build & Push
+    needs: [backend-test, frontend-build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
@@ -57,6 +55,8 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/finance-dashboard:latest,${{ secrets.DOCKER_USERNAME }}/finance-dashboard:${{ github.sha }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/finance-dashboard:latest
+            ${{ secrets.DOCKER_USERNAME }}/finance-dashboard:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

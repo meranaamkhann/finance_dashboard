@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FinancialRecordRepository extends JpaRepository<FinancialRecord, Long>, JpaSpecificationExecutor<FinancialRecord> {
+public interface FinancialRecordRepository
+        extends JpaRepository<FinancialRecord, Long>, JpaSpecificationExecutor<FinancialRecord> {
+
     Optional<FinancialRecord> findByIdAndDeletedFalse(Long id);
     long countByCreatedByIdAndDeletedFalse(Long userId);
 
@@ -34,4 +36,7 @@ public interface FinancialRecordRepository extends JpaRepository<FinancialRecord
 
     @Query("SELECT COALESCE(SUM(r.amount),0) FROM FinancialRecord r WHERE r.createdBy.id=:uid AND r.type='EXPENSE' AND r.category=:cat AND r.deleted=false AND r.date BETWEEN :from AND :to")
     BigDecimal spentByUserCategoryAndPeriod(@Param("uid") Long uid, @Param("cat") Category cat, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("SELECT EXTRACT(YEAR FROM r.date), EXTRACT(WEEK FROM r.date), SUM(CASE WHEN r.type='INCOME' THEN r.amount ELSE 0 END), SUM(CASE WHEN r.type='EXPENSE' THEN r.amount ELSE 0 END) FROM FinancialRecord r WHERE r.createdBy.id=:uid AND r.deleted=false AND r.date BETWEEN :from AND :to GROUP BY EXTRACT(YEAR FROM r.date), EXTRACT(WEEK FROM r.date) ORDER BY EXTRACT(YEAR FROM r.date), EXTRACT(WEEK FROM r.date)")
+    List<Object[]> weeklyTrendByUser(@Param("uid") Long uid, @Param("from") LocalDate from, @Param("to") LocalDate to);
 }

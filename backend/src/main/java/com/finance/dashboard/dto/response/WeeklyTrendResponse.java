@@ -1,15 +1,13 @@
 package com.finance.dashboard.dto.response;
-
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
 import java.math.BigDecimal;
 
-@Getter @Setter @Builder
+@Data @Builder
 public class WeeklyTrendResponse {
-    private String     weekLabel;  // "2024-W14"
+    private String weekLabel;   // e.g. "Week 1 - Jun 2024"
+    private int weekOfYear;
+    private int year;
     private BigDecimal income;
-    private BigDecimal expenses;
+    private BigDecimal expense;
     private BigDecimal net;
 }

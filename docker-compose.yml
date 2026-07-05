@@ -19,14 +19,16 @@ services:
       retries: 5
 
   api:
-    build: ./backend
+    build:
+      context: ./backend          # ← matches YOUR structure
+      dockerfile: Dockerfile
     container_name: finance_api
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:postgresql://postgres:5432/financedb
       DB_USERNAME: finance
       DB_PASSWORD: finance_secret
-      JWT_SECRET: "replace-this-with-64-char-random-secret-before-production-deploy"
+      JWT_SECRET: "replace-this-with-a-64-char-random-secret-before-deploy"
     ports:
       - "8080:8080"
     depends_on:

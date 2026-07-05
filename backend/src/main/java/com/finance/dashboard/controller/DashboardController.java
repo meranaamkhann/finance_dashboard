@@ -47,4 +47,12 @@ public class DashboardController {
     }
     @GetMapping("/health-score") @Operation(summary="Financial health score 0-100 — ANALYST/ADMIN")
     public ResponseEntity<ApiResponse<FinancialHealthScoreResponse>> getHealthScore() { return ResponseEntity.ok(ApiResponse.ok(healthScoreService.calculate(securityUtils.getCurrentUserId()))); }
+
+    @GetMapping("/trends/weekly") @Operation(summary="Weekly income vs expense — ANALYST/ADMIN")
+    public ResponseEntity<ApiResponse<java.util.List<WeeklyTrendResponse>>> getWeeklyTrend(
+            @RequestParam(defaultValue="12") int weeks) {
+        int safe = Math.max(1, Math.min(weeks, 52));
+        return ResponseEntity.ok(ApiResponse.ok(dashboardService.getWeeklyTrend(safe)));
+    }
+
 }
