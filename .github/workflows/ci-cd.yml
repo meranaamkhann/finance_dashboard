@@ -23,7 +23,7 @@ jobs:
 
       - name: Build & run unit tests
         working-directory: backend
-        run: chmod +x mvnw && ./mvnw clean verify -q
+        run: mvn clean verify -q
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
