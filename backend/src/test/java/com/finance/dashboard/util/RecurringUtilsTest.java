@@ -101,16 +101,16 @@ class RecurringUtilsTest {
                 .build();
 
         RecurringTransaction rule = RecurringTransaction.builder()
-                .id(1L)
-                .name("Test Rule")
-                .amount(BigDecimal.TEN)
-                .type(TransactionType.EXPENSE)
-                .category(Category.FOOD)
-                .frequency(freq)
-                .startDate(start)
-                .lastExecutedDate(lastRun)
-                .active(true)
-                .build();
+        .id(1L)
+        .name("Test Rule")
+        .amount(BigDecimal.TEN)
+        .type(TransactionType.EXPENSE)
+        .category(Category.FOOD)
+        .frequency(freq)
+        .startDate(start)
+        .lastExecutedDate(lastRun)
+        .active(true)
+        .build();
         rule.setUser(owner);
         return rule;
     }
