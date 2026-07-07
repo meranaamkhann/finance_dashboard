@@ -1,6 +1,9 @@
 package com.finance.dashboard.util;
 
 import com.finance.dashboard.model.*;
+import com.finance.dashboard.model.enums.Category;
+import com.finance.dashboard.model.enums.RecurringFrequency;
+import com.finance.dashboard.model.enums.Role;
 import com.finance.dashboard.model.enums.TransactionType;
 
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +59,7 @@ class RecurringUtilsTest {
     void isDue_NeverRun_StartDateIsToday() {
         LocalDate today = LocalDate.now();
         RecurringTransaction rule = rule(RecurringFrequency.MONTHLY, today, null);
-        assertThat(RecurringUtils.isDueToday(rule, today)).isTrue();
+        assertThat(RecurringUtils.isDueToday(rule, today).test(0)).isTrue();
     }
 
     @Test
@@ -65,7 +68,7 @@ class RecurringUtilsTest {
         LocalDate today = LocalDate.now();
         RecurringTransaction rule = rule(RecurringFrequency.DAILY, today.minusDays(1), today.minusDays(1));
         rule.setActive(false);
-        assertThat(RecurringUtils.isDueToday(rule, today)).isFalse();
+        assertThat(RecurringUtils.isDueToday(rule, today).test(0)).isFalse();
     }
 
     @Test
@@ -74,7 +77,7 @@ class RecurringUtilsTest {
         LocalDate today = LocalDate.now();
         RecurringTransaction rule = rule(RecurringFrequency.MONTHLY, today.minusMonths(2), today.minusMonths(1));
         rule.setEndDate(today.minusDays(1));
-        assertThat(RecurringUtils.isDueToday(rule, today)).isFalse();
+        assertThat(RecurringUtils.isDueToday(rule, today).test(0)).isFalse();
     }
 
     @Test
@@ -82,19 +85,33 @@ class RecurringUtilsTest {
     void isDue_FutureStart_ReturnsFalse() {
         LocalDate today = LocalDate.now();
         RecurringTransaction rule = rule(RecurringFrequency.MONTHLY, today.plusDays(5), null);
-        assertThat(RecurringUtils.isDueToday(rule, today)).isFalse();
+        assertThat(RecurringUtils.isDueToday(rule, today).test(0)).isFalse();
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────
 
     private RecurringTransaction rule(RecurringFrequency freq, LocalDate start, LocalDate lastRun) {
-        User owner = User.builder().id(1L).username("u").email("u@u.com")
-                .password("x").role(Role.ADMIN).active(true).build();
-        return RecurringTransaction.builder()
-                .id(1L).owner(owner).name("Test Rule")
-                .amount(BigDecimal.TEN).type(TransactionType.EXPENSE)
-                .category(Category.FOOD).frequency(freq)
-                .startDate(start).lastExecutedDate(lastRun)
-                .active(true).build();
+        User owner = User.builder()
+                .id(1L)
+                .username("u")
+                .email("u@u.com")
+                .password("x")
+                .role(Role.ADMIN)
+                .active(true)
+                .build();
+
+        RecurringTransaction rule = RecurringTransaction.builder()
+                .id(1L)
+                .name("Test Rule")
+                .amount(BigDecimal.TEN)
+                .type(TransactionType.EXPENSE)
+                .category(Category.FOOD)
+                .frequency(freq)
+                .startDate(start)
+                .lastExecutedDate(lastRun)
+                .active(true)
+                .build();
+        rule.setUser(owner);
+        return rule;
     }
 }
