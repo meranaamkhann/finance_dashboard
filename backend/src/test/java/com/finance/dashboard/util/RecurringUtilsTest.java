@@ -1,6 +1,8 @@
 package com.finance.dashboard.util;
 
 import com.finance.dashboard.model.*;
+import com.finance.dashboard.model.enums.TransactionType;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

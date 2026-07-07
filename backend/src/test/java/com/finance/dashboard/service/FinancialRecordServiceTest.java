@@ -6,6 +6,7 @@ import com.finance.dashboard.dto.request.UpdateRecordRequest;
 import com.finance.dashboard.dto.response.FinancialRecordResponse;
 import com.finance.dashboard.exception.ResourceNotFoundException;
 import com.finance.dashboard.model.*;
+import com.finance.dashboard.model.enums.TransactionType;
 import com.finance.dashboard.repository.FinancialRecordRepository;
 import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.security.UserDetailsImpl;

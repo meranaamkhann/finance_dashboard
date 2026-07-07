@@ -95,11 +95,12 @@ public class DashboardService {
     @Transactional(readOnly=true)
     public Map<String,BigDecimal> getSpendingByDayOfWeek(LocalDate from, LocalDate to) {
         validateRange(from,to); Long uid=securityUtils.getCurrentUserId();
-        String[] days={"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
+        // Hibernate 6 "extract(day of week from date)" returns 1=Sunday, 2=Monday ... 7=Saturday
+        String[] days={"?","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
         Map<String,BigDecimal> result=new LinkedHashMap<>();
         recordRepository.spendingByDayOfWeekByUser(uid,from,to).forEach(r->{
             int dow=((Number)r[0]).intValue();
-            result.put(dow>=0&&dow<7?days[dow]:"Unknown",new BigDecimal(r[1].toString()));
+            result.put(dow>=1&&dow<=7?days[dow]:"Unknown",new BigDecimal(r[1].toString()));
         });
         return result;
     }
