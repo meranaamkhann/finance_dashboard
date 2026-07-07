@@ -6,6 +6,7 @@ import com.finance.dashboard.dto.request.UpdateRecordRequest;
 import com.finance.dashboard.dto.response.FinancialRecordResponse;
 import com.finance.dashboard.exception.ResourceNotFoundException;
 import com.finance.dashboard.model.*;
+import com.finance.dashboard.model.enums.Category;
 import com.finance.dashboard.model.enums.TransactionType;
 import com.finance.dashboard.repository.FinancialRecordRepository;
 import com.finance.dashboard.repository.UserRepository;
@@ -76,7 +77,7 @@ class FinancialRecordServiceTest {
         when(recordRepo.findByIdAndDeletedFalse(10L)).thenReturn(Optional.of(sampleRecord));
         FinancialRecordResponse res = recordService.getById(10L);
         assertThat(res.getId()).isEqualTo(10L);
-        assertThat(res.getCreatedByUsername()).isEqualTo("admin");
+        assertThat(res.getCreatedBy()).isEqualTo("admin");
     }
 
     @Test
