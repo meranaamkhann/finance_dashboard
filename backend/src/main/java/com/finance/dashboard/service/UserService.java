@@ -74,4 +74,8 @@ public class UserService {
     private User findActive(Long id) { return userRepository.findByIdAndDeletedFalse(id).orElseThrow(()->new ResourceNotFoundException("User",id)); }
     public UserResponse toResponse(User u) { return UserResponse.builder().id(u.getId()).username(u.getUsername()).email(u.getEmail()).fullName(u.getFullName()).role(u.getRole()).active(u.isActive()).createdAt(u.getCreatedAt()).updatedAt(u.getUpdatedAt()).build(); }
     private String safeJson(Object o) { try{return objectMapper.writeValueAsString(o);}catch(Exception e){return "{}";} }
+
+    public UserResponse createUser(CreateUserRequest req, String actor) {
+    return create(req, actor, "127.0.0.1");
+}
 }
