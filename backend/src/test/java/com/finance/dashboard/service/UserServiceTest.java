@@ -7,6 +7,7 @@ import com.finance.dashboard.dto.response.UserResponse;
 import com.finance.dashboard.exception.DuplicateResourceException;
 import com.finance.dashboard.exception.ResourceNotFoundException;
 import com.finance.dashboard.model.User;
+import com.finance.dashboard.model.enums.Role;
 import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.security.UserDetailsImpl;
 import org.junit.jupiter.api.*;
@@ -49,8 +50,8 @@ class UserServiceTest {
     @DisplayName("createUser — happy path persists and returns response")
     void createUser_Success() {
         CreateUserRequest req = buildCreateRequest("testuser", "test@example.com");
-        when(userRepo.existsByUsername("testuser")).thenReturn(false);
-        when(userRepo.existsByEmail("test@example.com")).thenReturn(false);
+        when(userRepo.findByUsername("testuser")).thenReturn(Optional.empty());
+        when(userRepo.findByEmail("test@example.com")).thenReturn(Optional.empty());
         when(encoder.encode(any())).thenReturn("encoded");
         when(userRepo.save(any())).thenReturn(sampleUser);
 
@@ -65,7 +66,7 @@ class UserServiceTest {
     @DisplayName("createUser — duplicate username throws DuplicateResourceException")
     void createUser_DuplicateUsername() {
         CreateUserRequest req = buildCreateRequest("testuser", "other@example.com");
-        when(userRepo.existsByUsername("testuser")).thenReturn(true);
+        when(userRepo.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
         assertThatThrownBy(() -> userService.createUser(req, "127.0.0.1"))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining("testuser");
@@ -75,8 +76,8 @@ class UserServiceTest {
     @DisplayName("createUser — duplicate email throws DuplicateResourceException")
     void createUser_DuplicateEmail() {
         CreateUserRequest req = buildCreateRequest("newuser", "test@example.com");
-        when(userRepo.existsByUsername("newuser")).thenReturn(false);
-        when(userRepo.existsByEmail("test@example.com")).thenReturn(true);
+        when(userRepo.findByUsername("newuser")).thenReturn(Optional.empty());
+        when(userRepo.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
         assertThatThrownBy(() -> userService.createUser(req, "127.0.0.1"))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining("test@example.com");
@@ -108,7 +109,7 @@ class UserServiceTest {
         when(userRepo.findById(1L)).thenReturn(Optional.of(sampleUser));
         when(userRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        UserResponse res = userService.update(1L, req, "127.0.0.1");
+        UserResponse res = userService.update(1L, req, "127.0.0.1", "admin");
         assertThat(res.getRole()).isEqualTo(Role.ANALYST);
         assertThat(res.getFullName()).isEqualTo("Updated Name");
         assertThat(res.getEmail()).isEqualTo("test@example.com"); // unchanged
@@ -119,7 +120,7 @@ class UserServiceTest {
     void delete_SoftDeletes() {
         when(userRepo.findById(1L)).thenReturn(Optional.of(sampleUser));
         when(userRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        userService.delete(1L, "127.0.0.1");
+        userService.delete(1L, "127.0.0.1", "admin");
         assertThat(sampleUser.isActive()).isFalse();
     }
 
