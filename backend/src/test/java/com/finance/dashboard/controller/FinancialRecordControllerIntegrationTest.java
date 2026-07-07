@@ -3,7 +3,7 @@ package com.finance.dashboard.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finance.dashboard.dto.request.CreateRecordRequest;
 import com.finance.dashboard.dto.request.LoginRequest;
-import com.finance.dashboard.model.Category;
+import com.finance.dashboard.model.enums.Category;
 import com.finance.dashboard.model.enums.TransactionType;
 
 import org.junit.jupiter.api.*;
