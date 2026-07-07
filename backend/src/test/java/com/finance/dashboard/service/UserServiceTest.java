@@ -6,7 +6,6 @@ import com.finance.dashboard.dto.request.UpdateUserRequest;
 import com.finance.dashboard.dto.response.UserResponse;
 import com.finance.dashboard.exception.DuplicateResourceException;
 import com.finance.dashboard.exception.ResourceNotFoundException;
-import com.finance.dashboard.model.Role;
 import com.finance.dashboard.model.User;
 import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.security.UserDetailsImpl;
