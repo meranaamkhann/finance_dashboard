@@ -25,9 +25,9 @@ class BudgetServiceTest {
     private User user;
     @BeforeEach void setUp() {
         user = User.builder().id(1L).username("admin").role(Role.ADMIN).active(true).build();
-        when(securityUtils.getCurrentUser()).thenReturn(user);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(securityUtils.getCurrentUsername()).thenReturn("admin");
+        lenient().when(securityUtils.getCurrentUser()).thenReturn(user);
+        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        lenient().when(securityUtils.getCurrentUsername()).thenReturn("admin");
     }
     @Test void create_noOverlap_succeeds() {
         when(budgetRepository.existsByUserIdAndCategoryAndActiveTrueAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(any(),any(),any(),any())).thenReturn(false);

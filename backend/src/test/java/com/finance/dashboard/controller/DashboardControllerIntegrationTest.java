@@ -126,6 +126,8 @@ class DashboardControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString())
-                .path("data").path("token").asText();
+        .path("data")
+        .path("accessToken")
+        .asText();
     }
 }
