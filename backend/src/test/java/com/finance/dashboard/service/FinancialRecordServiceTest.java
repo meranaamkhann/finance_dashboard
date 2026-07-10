@@ -59,7 +59,7 @@ class FinancialRecordServiceTest {
         req.setAmount(new BigDecimal("5000")); req.setType(TransactionType.INCOME);
         req.setCategory(Category.SALARY);      req.setDate(LocalDate.now().minusDays(1));
 
-        when(userRepo.findByUsername("admin")).thenReturn(Optional.of(adminUser));
+        // when(userRepo.findByUsername("admin")).thenReturn(Optional.of(adminUser));
         when(recordRepo.save(any())).thenReturn(sampleRecord);
 
         FinancialRecordResponse res = recordService.create(req, "127.0.0.1");
