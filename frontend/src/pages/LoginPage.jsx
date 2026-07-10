@@ -63,6 +63,7 @@ export default function LoginPage() {
           </form>
 
           {/* Dev hint */}
+           {import.meta.env.DEV && (
           <div className="mt-5 pt-4 border-t border-surface-border">
             <p className="text-xs text-slate-400 font-medium mb-2">Dev credentials</p>
             {[['admin','Admin@1234','ADMIN'],['analyst','Analyst@1234','ANALYST'],['viewer','Viewer@1234','VIEWER']].map(([u,p,r])=>(
@@ -73,6 +74,7 @@ export default function LoginPage() {
               </button>
             ))}
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { recordsApi } from '../services/api'
-import { fmt, CATEGORIES, INCOME_CATS } from '../utils/format'
+import { fmt, CATEGORIES, INCOME_CATS, EXPENSE_CATS } from '../utils/format'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import Modal from '../components/ui/Modal'
@@ -67,7 +67,7 @@ export default function RecordsPage() {
     } catch { toast('Export failed','error') }
   }
 
-  const cats = form.type==='INCOME' ? INCOME_CATS : CATEGORIES.slice(8)
+  const cats = form.type==='INCOME' ? INCOME_CATS : EXPENSE_CATS
 
   return (
     <div className="space-y-4">
