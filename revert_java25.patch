@@ -1,0 +1,61 @@
+diff --git a/.github/workflows/ci-cd.yml b/.github/workflows/ci-cd.yml
+index 5c5b0c8..89872aa 100644
+--- a/.github/workflows/ci-cd.yml
++++ b/.github/workflows/ci-cd.yml
+@@ -14,10 +14,10 @@ jobs:
+       - name: Checkout
+         uses: actions/checkout@v4
+ 
+-      - name: Set up JDK 25
++      - name: Set up JDK 17
+         uses: actions/setup-java@v4
+         with:
+-          java-version: '25'
++          java-version: '17'
+           distribution: 'temurin'
+           cache: maven
+ 
+diff --git a/backend/Dockerfile b/backend/Dockerfile
+index 21d5913..3b36c69 100644
+--- a/backend/Dockerfile
++++ b/backend/Dockerfile
+@@ -1,5 +1,5 @@
+ # Stage 1: Build
+-FROM eclipse-temurin:25-jdk-alpine AS builder
++FROM eclipse-temurin:17-jdk-alpine AS builder
+ WORKDIR /app
+ RUN apk add --no-cache maven
+ COPY pom.xml .
+@@ -7,7 +7,7 @@ COPY src ./src
+ RUN mvn clean package -DskipTests -q
+ 
+ # Stage 2: Runtime
+-FROM eclipse-temurin:25-jre-alpine
++FROM eclipse-temurin:17-jre-alpine
+ RUN addgroup -S finance && adduser -S finance -G finance
+ USER finance
+ WORKDIR /app
+diff --git a/backend/pom.xml b/backend/pom.xml
+index aa51735..356ed46 100644
+--- a/backend/pom.xml
++++ b/backend/pom.xml
+@@ -18,7 +18,7 @@
+   <description>Production-grade Finance Dashboard</description>
+ 
+   <properties>
+-    <java.version>25</java.version>
++    <java.version>17</java.version>
+     <lombok.version>1.18.32</lombok.version>
+     <jjwt.version>0.11.5</jjwt.version>
+     <bucket4j.version>8.7.0</bucket4j.version>
+@@ -100,8 +100,8 @@
+         <artifactId>maven-compiler-plugin</artifactId>
+         <version>3.13.0</version>
+         <configuration>
+-          <source>25</source>
+-          <target>25</target>
++          <source>17</source>
++          <target>17</target>
+           <annotationProcessorPaths>
+             <path>
+               <groupId>org.projectlombok</groupId>

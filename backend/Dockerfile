@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM eclipse-temurin:25-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache maven
 COPY pom.xml .
@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -q
 
 # Stage 2: Runtime
-FROM eclipse-temurin:25-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 RUN addgroup -S finance && adduser -S finance -G finance
 USER finance
 WORKDIR /app
