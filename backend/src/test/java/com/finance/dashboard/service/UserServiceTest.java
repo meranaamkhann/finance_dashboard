@@ -9,14 +9,10 @@ import com.finance.dashboard.exception.ResourceNotFoundException;
 import com.finance.dashboard.model.User;
 import com.finance.dashboard.model.enums.Role;
 import com.finance.dashboard.repository.UserRepository;
-import com.finance.dashboard.security.UserDetailsImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -40,18 +36,14 @@ class UserServiceTest {
     void setUp() {
         sampleUser = User.builder().id(1L).username("testuser").email("test@example.com")
                 .password("encoded").fullName("Test User").role(Role.VIEWER).active(true).build();
-        mockSecurityContext("admin");
     }
-
-    @AfterEach
-    void tearDown() { SecurityContextHolder.clearContext(); }
 
     @Test
     @DisplayName("createUser — happy path persists and returns response")
     void createUser_Success() {
         CreateUserRequest req = buildCreateRequest("testuser", "test@example.com");
-        when(userRepo.findByUsername("testuser")).thenReturn(Optional.empty());
-        when(userRepo.findByEmail("test@example.com")).thenReturn(Optional.empty());
+        when(userRepo.existsByUsernameAndDeletedFalse("testuser")).thenReturn(false);
+        when(userRepo.existsByEmailAndDeletedFalse("test@example.com")).thenReturn(false);
         when(encoder.encode(any())).thenReturn("encoded");
         when(userRepo.save(any())).thenReturn(sampleUser);
 
@@ -66,7 +58,7 @@ class UserServiceTest {
     @DisplayName("createUser — duplicate username throws DuplicateResourceException")
     void createUser_DuplicateUsername() {
         CreateUserRequest req = buildCreateRequest("testuser", "other@example.com");
-        when(userRepo.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
+        when(userRepo.existsByUsernameAndDeletedFalse("testuser")).thenReturn(true);
         assertThatThrownBy(() -> userService.createUser(req, "127.0.0.1"))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining("testuser");
@@ -76,8 +68,8 @@ class UserServiceTest {
     @DisplayName("createUser — duplicate email throws DuplicateResourceException")
     void createUser_DuplicateEmail() {
         CreateUserRequest req = buildCreateRequest("newuser", "test@example.com");
-        when(userRepo.findByUsername("newuser")).thenReturn(Optional.empty());
-        when(userRepo.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
+        when(userRepo.existsByUsernameAndDeletedFalse("newuser")).thenReturn(false);
+        when(userRepo.existsByEmailAndDeletedFalse("test@example.com")).thenReturn(true);
         assertThatThrownBy(() -> userService.createUser(req, "127.0.0.1"))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining("test@example.com");
@@ -86,7 +78,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getById — returns user when found")
     void getById_Found() {
-        when(userRepo.findById(1L)).thenReturn(Optional.of(sampleUser));
+        when(userRepo.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(sampleUser));
         UserResponse res = userService.getById(1L);
         assertThat(res.getId()).isEqualTo(1L);
     }
@@ -94,7 +86,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getById — throws ResourceNotFoundException when missing")
     void getById_NotFound() {
-        when(userRepo.findById(99L)).thenReturn(Optional.empty());
+        when(userRepo.findByIdAndDeletedFalse(99L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.getById(99L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
@@ -106,10 +98,10 @@ class UserServiceTest {
         req.setRole(Role.ANALYST);
         req.setFullName("Updated Name");
 
-        when(userRepo.findById(1L)).thenReturn(Optional.of(sampleUser));
+        when(userRepo.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(sampleUser));
         when(userRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        UserResponse res = userService.update(1L, req, "127.0.0.1", "admin");
+        UserResponse res = userService.update(1L, req, "admin", "127.0.0.1");
         assertThat(res.getRole()).isEqualTo(Role.ANALYST);
         assertThat(res.getFullName()).isEqualTo("Updated Name");
         assertThat(res.getEmail()).isEqualTo("test@example.com"); // unchanged
@@ -118,9 +110,9 @@ class UserServiceTest {
     @Test
     @DisplayName("delete — sets user inactive (soft delete)")
     void delete_SoftDeletes() {
-        when(userRepo.findById(1L)).thenReturn(Optional.of(sampleUser));
+        when(userRepo.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(sampleUser));
         when(userRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        userService.delete(1L, "127.0.0.1", "admin");
+        userService.delete(1L, "admin", "127.0.0.1");
         assertThat(sampleUser.isActive()).isFalse();
     }
 
@@ -131,16 +123,5 @@ class UserServiceTest {
         req.setUsername(username); req.setEmail(email);
         req.setPassword("Pass@1234"); req.setFullName("Test"); req.setRole(Role.VIEWER);
         return req;
-    }
-
-    private void mockSecurityContext(String username) {
-        User admin = User.builder().id(99L).username(username).email("a@b.com")
-                .password("x").role(Role.ADMIN).active(true).build();
-        UserDetailsImpl principal = new UserDetailsImpl(admin);
-        Authentication auth = mock(Authentication.class);
-        when(auth.getPrincipal()).thenReturn(principal);
-        SecurityContext ctx = mock(SecurityContext.class);
-        when(ctx.getAuthentication()).thenReturn(auth);
-        SecurityContextHolder.setContext(ctx);
     }
 }

@@ -11,14 +11,11 @@ import com.finance.dashboard.model.enums.Role;
 import com.finance.dashboard.model.enums.TransactionType;
 import com.finance.dashboard.repository.FinancialRecordRepository;
 import com.finance.dashboard.repository.UserRepository;
-import com.finance.dashboard.security.UserDetailsImpl;
+import com.finance.dashboard.util.SecurityUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,6 +33,7 @@ class FinancialRecordServiceTest {
     @Mock AuditService              auditService;
     @Mock BudgetAlertService        budgetAlertService;
     @Mock ObjectMapper              objectMapper;
+    @Mock SecurityUtils             securityUtils;
 
     @InjectMocks FinancialRecordService recordService;
 
@@ -50,11 +48,9 @@ class FinancialRecordServiceTest {
                 .amount(new BigDecimal("5000")).type(TransactionType.INCOME)
                 .category(Category.SALARY).date(LocalDate.now())
                 .description("Test").createdBy(adminUser).deleted(false).build();
-        mockSecurityContext(adminUser);
+        lenient().when(securityUtils.getCurrentUser()).thenReturn(adminUser);
+        lenient().when(securityUtils.getCurrentUsername()).thenReturn(adminUser.getUsername());
     }
-
-    @AfterEach
-    void tearDown() { SecurityContextHolder.clearContext(); }
 
     @Test
     @DisplayName("create — persists record and returns response")
@@ -112,14 +108,5 @@ class FinancialRecordServiceTest {
         when(recordRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         recordService.delete(10L, "127.0.0.1");
         assertThat(sampleRecord.isDeleted()).isTrue();
-    }
-
-    private void mockSecurityContext(User user) {
-        UserDetailsImpl principal = new UserDetailsImpl(user);
-        Authentication auth = mock(Authentication.class);
-        when(auth.getPrincipal()).thenReturn(principal);
-        SecurityContext ctx = mock(SecurityContext.class);
-        when(ctx.getAuthentication()).thenReturn(auth);
-        SecurityContextHolder.setContext(ctx);
     }
 }

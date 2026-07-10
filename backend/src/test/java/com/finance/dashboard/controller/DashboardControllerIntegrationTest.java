@@ -43,7 +43,7 @@ class DashboardControllerIntegrationTest {
                             .header("Authorization", "Bearer " + tok))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.totalIncome").exists())
-                    .andExpect(jsonPath("$.data.totalExpenses").exists())
+                    .andExpect(jsonPath("$.data.totalExpense").exists())
                     .andExpect(jsonPath("$.data.netBalance").exists())
                     .andExpect(jsonPath("$.data.healthScore").exists());
         }
@@ -55,7 +55,7 @@ class DashboardControllerIntegrationTest {
         mockMvc.perform(get("/api/dashboard/health-score")
                         .header("Authorization", "Bearer " + analystToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.overallScore").isNumber())
+                .andExpect(jsonPath("$.data.score").isNumber())
                 .andExpect(jsonPath("$.data.grade").isString())
                 .andExpect(jsonPath("$.data.insights").isArray());
     }

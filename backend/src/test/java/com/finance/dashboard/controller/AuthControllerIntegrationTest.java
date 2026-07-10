@@ -36,7 +36,7 @@ class AuthControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.token").isNotEmpty())
+                .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.role").value("ADMIN"))
                 .andExpect(jsonPath("$.data.username").value("admin"));
     }
@@ -58,12 +58,12 @@ class AuthControllerIntegrationTest {
 
     @Test
     @Order(3)
-    @DisplayName("POST /api/auth/login — missing fields → 400 validation error")
-    void login_MissingFields_Returns400() throws Exception {
+    @DisplayName("POST /api/auth/login — missing fields → 422 validation error")
+    void login_MissingFields_Returns422() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errors").exists());
     }

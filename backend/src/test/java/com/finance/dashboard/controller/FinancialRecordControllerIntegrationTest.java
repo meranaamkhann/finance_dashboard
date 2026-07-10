@@ -56,10 +56,10 @@ class FinancialRecordControllerIntegrationTest {
     }
 
     @Test @Order(2)
-    @DisplayName("GET /api/records — no auth → 403")
-    void list_NoAuth_403() throws Exception {
+    @DisplayName("GET /api/records — no auth → 401")
+    void list_NoAuth_401() throws Exception {
         mockMvc.perform(get("/api/records"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test @Order(3)
@@ -97,7 +97,7 @@ class FinancialRecordControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.amount").value(75000.0))
                 .andExpect(jsonPath("$.data.type").value("INCOME"))
-                .andExpect(jsonPath("$.data.createdByUsername").value("admin"));
+                .andExpect(jsonPath("$.data.createdBy").value("admin"));
     }
 
     @Test @Order(6)
@@ -114,8 +114,8 @@ class FinancialRecordControllerIntegrationTest {
     }
 
     @Test @Order(7)
-    @DisplayName("POST /api/records — future date fails validation (400)")
-    void create_FutureDate_400() throws Exception {
+    @DisplayName("POST /api/records — future date fails validation (422)")
+    void create_FutureDate_422() throws Exception {
         CreateRecordRequest req = buildRequest("500", TransactionType.EXPENSE,
                 Category.FOOD, LocalDate.now().plusDays(5), "Future date");
 
@@ -123,13 +123,13 @@ class FinancialRecordControllerIntegrationTest {
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errors.date").exists());
     }
 
     @Test @Order(8)
-    @DisplayName("POST /api/records — negative amount fails validation (400)")
-    void create_NegativeAmount_400() throws Exception {
+    @DisplayName("POST /api/records — negative amount fails validation (422)")
+    void create_NegativeAmount_422() throws Exception {
         CreateRecordRequest req = buildRequest("-100", TransactionType.EXPENSE,
                 Category.FOOD, LocalDate.now().minusDays(1), "Negative");
 
@@ -137,7 +137,7 @@ class FinancialRecordControllerIntegrationTest {
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errors.amount").exists());
     }
 
@@ -162,7 +162,7 @@ class FinancialRecordControllerIntegrationTest {
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Disposition",
-                        containsString("attachment; filename=\"finance-export-")))
+                        containsString("attachment; filename=\"records_")))
                 .andExpect(content().contentTypeCompatibleWith("text/csv"));
     }
 
