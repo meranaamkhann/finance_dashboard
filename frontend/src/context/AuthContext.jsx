@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
   const isViewer   = () => !!user
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isAnalyst, isViewer }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isAnalyst, isViewer, refreshUser: loadUser }}>
       {children}
     </AuthContext.Provider>
   )

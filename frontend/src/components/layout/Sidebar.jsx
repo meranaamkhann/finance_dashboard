@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, RefreshCw, Bell, Users, ClipboardList, LogOut, TrendingUp } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -15,6 +15,7 @@ const nav = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const visible = nav.filter(n => n.roles.includes(user?.role))
 
   return (
@@ -44,15 +45,15 @@ export default function Sidebar() {
 
       {/* User */}
       <div className="px-3 py-3 border-t border-surface-border">
-        <div className="flex items-center gap-3 px-3 py-2 mb-1">
-          <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-700">
+        <button onClick={()=>navigate('/profile')} className="flex items-center gap-3 w-full px-3 py-2 mb-1 rounded-lg hover:bg-slate-50 transition-colors text-left">
+          <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-700 shrink-0">
             {user?.fullName?.[0]?.toUpperCase() ?? 'U'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-slate-900 truncate">{user?.fullName}</p>
             <p className="text-xs text-slate-400 truncate">{user?.role}</p>
           </div>
-        </div>
+        </button>
         <button onClick={logout} className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
           <LogOut className="w-4 h-4"/>Logout
         </button>

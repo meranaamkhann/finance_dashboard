@@ -11,6 +11,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import UsersPage from './pages/UsersPage'
 import AuditPage from './pages/AuditPage'
+import ProfilePage from './pages/ProfilePage'
 import Spinner from './components/ui/Spinner'
 
 function ProtectedRoute({ children, requireAdmin, requireAnalyst }) {
@@ -41,6 +42,7 @@ function AppRoutes() {
               <Route path="/analytics"     element={<ProtectedRoute requireAnalyst><AnalyticsPage/></ProtectedRoute>}/>
               <Route path="/users"         element={<ProtectedRoute requireAdmin><UsersPage/></ProtectedRoute>}/>
               <Route path="/audit"         element={<ProtectedRoute requireAdmin><AuditPage/></ProtectedRoute>}/>
+              <Route path="/profile"       element={<ProfilePage/>}/>
               <Route path="*"              element={<Navigate to="/" replace/>}/>
             </Routes>
           </AppLayout>
