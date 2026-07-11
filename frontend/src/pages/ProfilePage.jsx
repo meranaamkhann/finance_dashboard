@@ -3,7 +3,7 @@ import { usersApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import Spinner from '../components/ui/Spinner'
-import { User, Lock } from 'lucide-react'
+import { User, Lock, Eye, EyeOff } from 'lucide-react'
 
 const ROLE_BADGE = { ADMIN:'badge-purple', ANALYST:'badge-blue', VIEWER:'badge-gray' }
 const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=]).{8,64}$/
@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const [savingPw, setSavingPw] = useState(false)
   const [info, setInfo] = useState({ fullName:'', email:'' })
   const [pw, setPw] = useState({ currentPassword:'', newPassword:'', confirmPassword:'' })
+  const [showPw, setShowPw] = useState({ current:false, next:false, confirm:false })
 
   useEffect(() => {
     usersApi.getMe().then(({ data }) => {
@@ -92,14 +93,29 @@ export default function ProfilePage() {
         </div>
         <div className="space-y-3">
           <div><label className="label">Current Password</label>
-            <input className="input" type="password" value={pw.currentPassword} onChange={e=>setPw(f=>({...f,currentPassword:e.target.value}))}/>
+            <div className="relative">
+              <input className="input pr-10" type={showPw.current?'text':'password'} value={pw.currentPassword} onChange={e=>setPw(f=>({...f,currentPassword:e.target.value}))}/>
+              <button type="button" onClick={()=>setShowPw(s=>({...s,current:!s.current}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showPw.current ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+              </button>
+            </div>
           </div>
           <div><label className="label">New Password</label>
-            <input className="input" type="password" placeholder="Min 8 chars, uppercase, lowercase, digit, special char"
-              value={pw.newPassword} onChange={e=>setPw(f=>({...f,newPassword:e.target.value}))}/>
+            <div className="relative">
+              <input className="input pr-10" type={showPw.next?'text':'password'} placeholder="Min 8 chars, uppercase, lowercase, digit, special char"
+                value={pw.newPassword} onChange={e=>setPw(f=>({...f,newPassword:e.target.value}))}/>
+              <button type="button" onClick={()=>setShowPw(s=>({...s,next:!s.next}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showPw.next ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+              </button>
+            </div>
           </div>
           <div><label className="label">Confirm New Password</label>
-            <input className="input" type="password" value={pw.confirmPassword} onChange={e=>setPw(f=>({...f,confirmPassword:e.target.value}))}/>
+            <div className="relative">
+              <input className="input pr-10" type={showPw.confirm?'text':'password'} value={pw.confirmPassword} onChange={e=>setPw(f=>({...f,confirmPassword:e.target.value}))}/>
+              <button type="button" onClick={()=>setShowPw(s=>({...s,confirm:!s.confirm}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showPw.confirm ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+              </button>
+            </div>
           </div>
           <div className="flex justify-end pt-1">
             <button className="btn-primary" onClick={savePassword} disabled={savingPw}>{savingPw?'Updating…':'Update Password'}</button>
