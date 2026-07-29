@@ -67,5 +67,22 @@ docker-compose up --build
    - `DB_USERNAME=...` `DB_PASSWORD=...`
    - `JWT_SECRET=<64-char random string>`
 
+
+   ## Environment Variables
+
+Create a `.env` file in the project root by copying the example:
+
+```bash
+cp .env.example .env
+```
+
+or on Windows:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then update the values in `.env` with your own database credentials and JWT secret before running the application.
+
 ## Author
 Asad Khan - github.com/meranaamkhann
