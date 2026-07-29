@@ -23,6 +23,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.http.HttpHeaders;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -97,8 +99,8 @@ public class FinancialRecordController {
         String fn = "records_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
         auditService.log(AuditAction.CSV_EXPORTED, securityUtils.getCurrentUsername(), "CSV exported", IpUtils.resolveIp(http));
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="" + fn + """)
-                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
-                .body(csv);
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fn + "\"")
+        .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+        .body(csv);
     }
 }
