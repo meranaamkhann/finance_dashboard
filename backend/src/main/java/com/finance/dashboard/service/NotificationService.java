@@ -24,30 +24,37 @@ public class NotificationService {
         repo.save(Notification.builder().user(user).type(type).message(message).build());
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public PagedResponse<NotificationResponse> getMyNotifications(boolean unreadOnly, Pageable pageable) {
         Long uid = securityUtils.getCurrentUserId();
-        var page = unreadOnly ? repo.findByUserIdAndReadFalseOrderByCreatedAtDesc(uid, pageable)
-                              : repo.findByUserIdOrderByCreatedAtDesc(uid, pageable);
+        var page = unreadOnly
+                ? repo.findByUserIdAndReadFalseOrderByCreatedAtDesc(uid, pageable)
+                : repo.findByUserIdOrderByCreatedAtDesc(uid, pageable);
         return new PagedResponse<>(page.map(this::toResponse));
     }
 
-    @Transactional(readOnly=true)
-    public long getUnreadCount() { return repo.countByUserIdAndReadFalse(securityUtils.getCurrentUserId()); }
+    @Transactional(readOnly = true)
+    public long getUnreadCount() {
+        return repo.countByUserIdAndReadFalse(securityUtils.getCurrentUserId());
+    }
 
     @Transactional
     public NotificationResponse markRead(Long id) {
         Long uid = securityUtils.getCurrentUserId();
-        Notification n = repo.findByIdAndUserId(id, uid).orElseThrow(() -> new ResourceNotFoundException("Notification", id));
+        Notification n = repo.findByIdAndUserId(id, uid)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
         if (!n.isRead()) { n.setRead(true); n.setReadAt(LocalDateTime.now()); repo.save(n); }
         return toResponse(n);
     }
 
     @Transactional
-    public int markAllRead() { return repo.markAllReadByUserId(securityUtils.getCurrentUserId(), LocalDateTime.now()); }
+    public int markAllRead() {
+        return repo.markAllReadByUserId(securityUtils.getCurrentUserId(), LocalDateTime.now());
+    }
 
     private NotificationResponse toResponse(Notification n) {
-        return NotificationResponse.builder().id(n.getId()).type(n.getType()).message(n.getMessage())
+        return NotificationResponse.builder()
+                .id(n.getId()).type(n.getType()).message(n.getMessage())
                 .read(n.isRead()).createdAt(n.getCreatedAt()).readAt(n.getReadAt()).build();
     }
 }

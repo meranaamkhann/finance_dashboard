@@ -12,5 +12,14 @@ public class PagedResponse<T> {
     private final int totalPages;
     private final boolean first;
     private final boolean last;
-    public PagedResponse(Page<T> p) { content=p.getContent(); page=p.getNumber(); size=p.getSize(); totalElements=p.getTotalElements(); totalPages=p.getTotalPages(); first=p.isFirst(); last=p.isLast(); }
+
+    public PagedResponse(Page<T> p) {
+        this.content       = p.getContent();
+        this.page          = p.getNumber();
+        this.size          = p.getSize();
+        this.totalElements = p.getTotalElements();
+        this.totalPages    = p.getTotalPages();
+        this.first         = p.isFirst();
+        this.last          = p.isLast();
+    }
 }

@@ -14,7 +14,10 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     Optional<Budget> findByIdAndUserIdAndActiveTrue(Long id, Long userId);
     List<Budget> findAllByUserIdAndActiveTrue(Long userId);
     List<Budget> findAllByActiveTrue();
-    @Query("SELECT b FROM Budget b WHERE b.user.id=:uid AND b.category=:cat AND b.active=true AND b.periodStart<=:date AND b.periodEnd>=:date")
-    List<Budget> findActiveBudgetsForUserCategoryAndDate(@Param("uid") Long uid, @Param("cat") Category cat, @Param("date") LocalDate date);
-    boolean existsByUserIdAndCategoryAndActiveTrueAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(Long userId, Category category, LocalDate end, LocalDate start);
+    @Query("SELECT b FROM Budget b WHERE b.user.id = :uid AND b.category = :cat " +
+           "AND b.active = true AND b.periodStart <= :date AND b.periodEnd >= :date")
+    List<Budget> findActiveBudgetsForUserCategoryAndDate(
+            @Param("uid") Long uid, @Param("cat") Category cat, @Param("date") LocalDate date);
+    boolean existsByUserIdAndCategoryAndActiveTrueAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
+            Long userId, Category category, LocalDate end, LocalDate start);
 }

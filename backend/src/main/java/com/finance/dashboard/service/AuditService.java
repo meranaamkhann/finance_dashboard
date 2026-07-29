@@ -16,10 +16,15 @@ public class AuditService {
     public void log(AuditAction action, String actor, String entityType, Long entityId,
                     String before, String after, String ip, String detail) {
         try {
-            repo.save(AuditLog.builder().action(action).actorUsername(actor!=null?actor:"SYSTEM")
-                    .entityType(entityType).entityId(entityId).beforeState(before).afterState(after)
+            repo.save(AuditLog.builder()
+                    .action(action)
+                    .actorUsername(actor != null ? actor : "SYSTEM")
+                    .entityType(entityType).entityId(entityId)
+                    .beforeState(before).afterState(after)
                     .ipAddress(ip).detail(detail).build());
-        } catch (Exception e) { log.error("Audit write failed [{}]: {}", action, e.getMessage()); }
+        } catch (Exception e) {
+            log.error("Audit write failed [{}]: {}", action, e.getMessage());
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

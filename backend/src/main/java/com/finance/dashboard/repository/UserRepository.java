@@ -18,8 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailAndDeletedFalse(String email);
     Page<User> findAllByDeletedFalse(Pageable pageable);
     Page<User> findAllByRoleAndDeletedFalse(Role role, Pageable pageable);
-    @Modifying @Query("UPDATE User u SET u.failedLoginAttempts = 0, u.lockedUntil = null WHERE u.id = :id")
+    @Modifying
+    @Query("UPDATE User u SET u.failedLoginAttempts = 0, u.lockedUntil = null WHERE u.id = :id")
     void resetFailedAttempts(Long id);
-    Optional<User> findByUsername(String username);
-Optional<User> findByEmail(String email);
 }

@@ -5,7 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
-@Entity @Table(name = "notifications", indexes = {
+@Entity
+@Table(name = "notifications", indexes = {
     @Index(name = "idx_notif_user_unread", columnList = "user_id, read")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

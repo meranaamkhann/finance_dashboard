@@ -19,7 +19,6 @@ application-prod.properties.local
 frontend/node_modules/
 frontend/dist/
 frontend/.env
-frontend/.env.local
 
 # OS
 .DS_Store

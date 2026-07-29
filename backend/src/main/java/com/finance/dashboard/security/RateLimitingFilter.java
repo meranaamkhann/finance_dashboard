@@ -17,19 +17,25 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j @Component
+@Slf4j
+@Component
 public class RateLimitingFilter extends OncePerRequestFilter {
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
     private final ObjectMapper mapper = new ObjectMapper();
-    @Value("${app.rate-limit.capacity:200}") private long capacity;
+
+    @Value("${app.rate-limit.capacity:200}")      private long capacity;
     @Value("${app.rate-limit.refill-tokens:200}") private long refillTokens;
     @Value("${app.rate-limit.refill-seconds:60}") private long refillSeconds;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
+                                    FilterChain chain) throws ServletException, IOException {
         String ip = resolveIp(req);
         Bucket bucket = buckets.computeIfAbsent(ip, k -> Bucket.builder()
-                .addLimit(Bandwidth.builder().capacity(capacity).refillGreedy(refillTokens, Duration.ofSeconds(refillSeconds)).build())
+                .addLimit(Bandwidth.builder()
+                        .capacity(capacity)
+                        .refillGreedy(refillTokens, Duration.ofSeconds(refillSeconds))
+                        .build())
                 .build());
         var probe = bucket.tryConsumeAndReturnRemaining(1);
         res.setHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
@@ -38,16 +44,25 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         res.setHeader("Retry-After", String.valueOf(wait));
         res.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        mapper.writeValue(res.getWriter(), Map.of("success", false, "message", "Rate limit exceeded. Retry after " + wait + "s."));
+        mapper.writeValue(res.getWriter(),
+                Map.of("success", false, "message", "Rate limit exceeded. Retry after " + wait + "s."));
     }
+
     private String resolveIp(HttpServletRequest req) {
         String f = req.getHeader("X-Forwarded-For");
-        if (f != null && !f.isBlank()) { String ip = f.split(",")[0].trim(); return ip.length() <= 45 ? ip : req.getRemoteAddr(); }
+        if (f != null && !f.isBlank()) {
+            String ip = f.split(",")[0].trim();
+            return ip.length() <= 45 ? ip : req.getRemoteAddr();
+        }
         String r = req.getHeader("X-Real-IP");
         return (r != null && !r.isBlank() && r.length() <= 45) ? r.trim() : req.getRemoteAddr();
     }
-    @Override protected boolean shouldNotFilter(HttpServletRequest req) {
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest req) {
         String p = req.getRequestURI();
-        return p.startsWith("/actuator/health") || p.startsWith("/swagger-ui") || p.startsWith("/v3/api-docs");
+        return p.startsWith("/actuator/health")
+            || p.startsWith("/swagger-ui")
+            || p.startsWith("/v3/api-docs");
     }
 }

@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface RecurringTransactionRepository extends JpaRepository<RecurringTransaction, Long> {
     Optional<RecurringTransaction> findByIdAndUserIdAndActiveTrue(Long id, Long userId);
     List<RecurringTransaction> findAllByUserIdAndActiveTrue(Long userId);
-    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.active=true AND rt.nextExecutionDate<=:today AND (rt.endDate IS NULL OR rt.endDate>=:today)")
+    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.active = true " +
+           "AND rt.nextExecutionDate <= :today " +
+           "AND (rt.endDate IS NULL OR rt.endDate >= :today)")
     List<RecurringTransaction> findAllDueByDate(@Param("today") LocalDate today);
 }

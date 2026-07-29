@@ -17,7 +17,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     Page<Notification> findByUserIdAndReadFalseOrderByCreatedAtDesc(Long userId, Pageable pageable);
     long countByUserIdAndReadFalse(Long userId);
     Optional<Notification> findByIdAndUserId(Long id, Long userId);
-    @Modifying @Query("UPDATE Notification n SET n.read=true, n.readAt=:now WHERE n.user.id=:uid AND n.read=false")
+    boolean existsByUserIdAndTypeAndReadFalseAndCreatedAtAfterAndMessageContaining(
+            Long userId, NotificationType type, LocalDateTime after, String msg);
+    @Modifying
+    @Query("UPDATE Notification n SET n.read = true, n.readAt = :now " +
+           "WHERE n.user.id = :uid AND n.read = false")
     int markAllReadByUserId(@Param("uid") Long uid, @Param("now") LocalDateTime now);
-    boolean existsByUserIdAndTypeAndReadFalseAndCreatedAtAfterAndMessageContaining(Long userId, NotificationType type, LocalDateTime after, String msg);
 }

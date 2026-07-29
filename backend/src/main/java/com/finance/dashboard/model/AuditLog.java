@@ -5,9 +5,10 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
-@Entity @Table(name = "audit_logs", indexes = {
-    @Index(name = "idx_audit_actor", columnList = "actor_username"),
-    @Index(name = "idx_audit_action", columnList = "action"),
+@Entity
+@Table(name = "audit_logs", indexes = {
+    @Index(name = "idx_audit_actor",      columnList = "actor_username"),
+    @Index(name = "idx_audit_action",     columnList = "action"),
     @Index(name = "idx_audit_created_at", columnList = "created_at")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

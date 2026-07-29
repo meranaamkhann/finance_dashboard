@@ -1,10 +1,15 @@
 package com.finance.dashboard.dto.response;
 import com.finance.dashboard.model.enums.Role;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+
 @Data @Builder
 public class AuthResponse {
-    private String accessToken, refreshToken, tokenType;
-    private long expiresIn;
-    private String username, fullName;
-    private Role role;
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType;
+    private long   expiresIn;
+    private String username;
+    private String fullName;
+    private Role   role;
 }

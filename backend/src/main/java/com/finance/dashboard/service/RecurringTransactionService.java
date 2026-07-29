@@ -22,22 +22,26 @@ public class RecurringTransactionService {
     @Transactional
     public RecurringTransactionResponse create(RecurringTransactionRequest req, String ip) {
         User user = securityUtils.getCurrentUser();
-        RecurringTransaction rt = RecurringTransaction.builder().user(user).name(req.getName())
-                .type(req.getType()).category(req.getCategory()).amount(req.getAmount())
-                .frequency(req.getFrequency()).startDate(req.getStartDate()).endDate(req.getEndDate())
-                .nextExecutionDate(RecurringUtils.initialNextDate(req.getStartDate(), req.getFrequency())).build();
+        RecurringTransaction rt = RecurringTransaction.builder()
+                .user(user).name(req.getName()).type(req.getType())
+                .category(req.getCategory()).amount(req.getAmount())
+                .frequency(req.getFrequency()).startDate(req.getStartDate())
+                .endDate(req.getEndDate())
+                .nextExecutionDate(RecurringUtils.initialNextDate(req.getStartDate(), req.getFrequency()))
+                .build();
         repo.save(rt);
-        auditService.log(AuditAction.RECURRING_CREATED, user.getUsername(), "RecurringTransaction", rt.getId(),
-                null, null, ip, "Created: " + rt.getName());
+        auditService.log(AuditAction.RECURRING_CREATED, user.getUsername(),
+                "RecurringTransaction", rt.getId(), null, null, ip, "Created: " + rt.getName());
         return toResponse(rt);
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<RecurringTransactionResponse> getMyRecurring() {
-        return repo.findAllByUserIdAndActiveTrue(securityUtils.getCurrentUserId()).stream().map(this::toResponse).toList();
+        return repo.findAllByUserIdAndActiveTrue(securityUtils.getCurrentUserId())
+                .stream().map(this::toResponse).toList();
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public RecurringTransactionResponse getById(Long id) {
         return toResponse(repo.findByIdAndUserIdAndActiveTrue(id, securityUtils.getCurrentUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("RecurringTransaction", id)));
@@ -67,9 +71,9 @@ public class RecurringTransactionService {
     }
 
     public RecurringTransactionResponse toResponse(RecurringTransaction rt) {
-        return RecurringTransactionResponse.builder().id(rt.getId()).name(rt.getName()).type(rt.getType())
-                .category(rt.getCategory()).amount(rt.getAmount()).frequency(rt.getFrequency())
-                .startDate(rt.getStartDate()).endDate(rt.getEndDate())
+        return RecurringTransactionResponse.builder().id(rt.getId()).name(rt.getName())
+                .type(rt.getType()).category(rt.getCategory()).amount(rt.getAmount())
+                .frequency(rt.getFrequency()).startDate(rt.getStartDate()).endDate(rt.getEndDate())
                 .nextExecutionDate(rt.getNextExecutionDate()).lastExecutedDate(rt.getLastExecutedDate())
                 .active(rt.isActive()).createdAt(rt.getCreatedAt()).build();
     }

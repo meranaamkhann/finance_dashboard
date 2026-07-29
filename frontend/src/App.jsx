@@ -11,42 +11,39 @@ import NotificationsPage from './pages/NotificationsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import UsersPage from './pages/UsersPage'
 import AuditPage from './pages/AuditPage'
-import ProfilePage from './pages/ProfilePage'
 import Spinner from './components/ui/Spinner'
 
-function ProtectedRoute({ children, requireAdmin, requireAnalyst }) {
+function Guard({ children, analyst, admin }) {
   const { user, loading, isAdmin, isAnalyst } = useAuth()
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner size="lg"/></div>
-  if (!user)          return <Navigate to="/login" replace/>
-  if (requireAdmin   && !isAdmin())   return <Navigate to="/" replace/>
-  if (requireAnalyst && !isAnalyst()) return <Navigate to="/" replace/>
+  if (!user)                    return <Navigate to="/login" replace/>
+  if (admin   && !isAdmin())    return <Navigate to="/" replace/>
+  if (analyst && !isAnalyst())  return <Navigate to="/" replace/>
   return children
 }
 
 function AppRoutes() {
   const { user, loading } = useAuth()
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner size="lg"/></div>
-
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace/> : <LoginPage/>}/>
       <Route path="/*" element={
-        <ProtectedRoute>
+        <Guard>
           <AppLayout>
             <Routes>
               <Route path="/"              element={<DashboardPage/>}/>
               <Route path="/records"       element={<RecordsPage/>}/>
               <Route path="/notifications" element={<NotificationsPage/>}/>
-              <Route path="/budgets"       element={<ProtectedRoute requireAnalyst><BudgetsPage/></ProtectedRoute>}/>
-              <Route path="/recurring"     element={<ProtectedRoute requireAnalyst><RecurringPage/></ProtectedRoute>}/>
-              <Route path="/analytics"     element={<ProtectedRoute requireAnalyst><AnalyticsPage/></ProtectedRoute>}/>
-              <Route path="/users"         element={<ProtectedRoute requireAdmin><UsersPage/></ProtectedRoute>}/>
-              <Route path="/audit"         element={<ProtectedRoute requireAdmin><AuditPage/></ProtectedRoute>}/>
-              <Route path="/profile"       element={<ProfilePage/>}/>
+              <Route path="/budgets"       element={<Guard analyst><BudgetsPage/></Guard>}/>
+              <Route path="/recurring"     element={<Guard analyst><RecurringPage/></Guard>}/>
+              <Route path="/analytics"     element={<Guard analyst><AnalyticsPage/></Guard>}/>
+              <Route path="/users"         element={<Guard admin><UsersPage/></Guard>}/>
+              <Route path="/audit"         element={<Guard admin><AuditPage/></Guard>}/>
               <Route path="*"              element={<Navigate to="/" replace/>}/>
             </Routes>
           </AppLayout>
-        </ProtectedRoute>
+        </Guard>
       }/>
     </Routes>
   )

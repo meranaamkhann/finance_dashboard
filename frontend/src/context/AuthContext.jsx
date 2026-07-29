@@ -4,48 +4,37 @@ import { authApi, usersApi } from '../services/api'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser]     = useState(null)
   const [loading, setLoading] = useState(true)
 
   const loadUser = useCallback(async () => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) { setLoading(false); return }
+    if (!localStorage.getItem('accessToken')) { setLoading(false); return }
     try {
       const { data } = await usersApi.getMe()
       setUser(data.data)
-    } catch {
-      localStorage.clear()
-    } finally {
-      setLoading(false)
-    }
+    } catch { localStorage.clear() }
+    finally { setLoading(false) }
   }, [])
 
   useEffect(() => { loadUser() }, [loadUser])
 
-  const login = async (credentials) => {
-    const { data } = await authApi.login(credentials)
-    const { accessToken, refreshToken, role, username, fullName } = data.data
-    localStorage.setItem('accessToken', accessToken)
-    localStorage.setItem('refreshToken', refreshToken)
-    setUser({ username, fullName, role })
+  const login = async (creds) => {
+    const { data } = await authApi.login(creds)
+    localStorage.setItem('accessToken',  data.data.accessToken)
+    localStorage.setItem('refreshToken', data.data.refreshToken)
+    setUser({ username: data.data.username, fullName: data.data.fullName, role: data.data.role })
     return data.data
   }
 
-  const logout = () => {
-    localStorage.clear()
-    setUser(null)
-    window.location.href = '/login'
-  }
-
-  const isAdmin    = () => user?.role === 'ADMIN'
-  const isAnalyst  = () => user?.role === 'ANALYST' || isAdmin()
-  const isViewer   = () => !!user
+  const logout = () => { localStorage.clear(); setUser(null); window.location.href = '/login' }
+  const isAdmin   = () => user?.role === 'ADMIN'
+  const isAnalyst = () => user?.role === 'ANALYST' || isAdmin()
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isAnalyst, isViewer, refreshUser: loadUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isAnalyst }}>
       {children}
     </AuthContext.Provider>
   )
 }
-
 export const useAuth = () => useContext(AuthContext)
+
