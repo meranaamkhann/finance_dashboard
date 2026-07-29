@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class BudgetServiceTest {
@@ -34,10 +35,10 @@ class BudgetServiceTest {
 
     @BeforeEach void setUp() {
         user = User.builder().id(1L).username("admin").role(Role.ADMIN).active(true).build();
-        when(securityUtils.getCurrentUser()).thenReturn(user);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(securityUtils.getCurrentUsername()).thenReturn("admin");
-    }
+       lenient().when(securityUtils.getCurrentUser()).thenReturn(user);
+        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        lenient().when(securityUtils.getCurrentUsername()).thenReturn("admin");
+            }
 
     @Test void create_noOverlap_succeeds() {
         when(budgetRepository
