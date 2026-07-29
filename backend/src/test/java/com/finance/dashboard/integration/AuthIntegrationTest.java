@@ -28,8 +28,8 @@ class AuthIntegrationTest {
            .andExpect(jsonPath("$.status").value("UP"));
     }
 
-    @Test void unauthenticated_returns403() throws Exception {
-        mvc.perform(get("/api/records")).andExpect(status().isForbidden());
+    @Test void unauthenticated_returns401() throws Exception {
+        mvc.perform(get("/api/records")).andExpect(status().isUnauthorized());
     }
 
     @Test void login_admin_returns200() throws Exception {
