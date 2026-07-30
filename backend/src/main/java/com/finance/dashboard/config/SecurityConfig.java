@@ -1,5 +1,4 @@
 package com.finance.dashboard.config;
-
 import com.finance.dashboard.security.JwtAuthenticationFilter;
 import com.finance.dashboard.security.RateLimitingFilter;
 import com.finance.dashboard.security.UserDetailsServiceImpl;
@@ -46,12 +45,15 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(
-                    "/api/auth/**", "/v3/api-docs/**",
-                    "/swagger-ui/**", "/swagger-ui.html", "/actuator/health"
+                    "/api/auth/**",
+                    "/api/landing/**",
+                    "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+                    "/actuator/health"
                 ).permitAll();
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                 if ("dev".equalsIgnoreCase(profile))
                     auth.requestMatchers("/h2-console/**").permitAll();
+                auth.requestMatchers("/actuator/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/users/me", "/api/users/me/**").authenticated();
                 auth.requestMatchers("/api/users/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/audit/**").hasRole("ADMIN");
@@ -79,7 +81,7 @@ public class SecurityConfig {
             })
             .authenticationProvider(authProvider())
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtFilter,       UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

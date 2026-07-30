@@ -30,7 +30,15 @@ api.interceptors.response.use(
 )
 
 export default api
-export const authApi         = { login: d => api.post('/auth/login', d), refresh: t => api.post('/auth/refresh', { refreshToken: t }) }
+export const authApi = {
+  login:           d  => api.post('/auth/login', d),
+  loginByEmail:    d  => api.post('/auth/login/email', d),
+  refresh:         rt => api.post('/auth/refresh', { refreshToken: rt }),
+  logout:          rt => api.post('/auth/logout', { refreshToken: rt }),
+  logoutAll:       () => api.post('/auth/logout-all'),
+  forgotPassword:  d  => api.post('/auth/forgot-password', d),
+  resetPassword:   d  => api.post('/auth/reset-password', d),
+}
 export const dashboardApi    = {
   getSummary:      ()        => api.get('/dashboard/summary'),
   getSummaryRange: (f,t)     => api.get('/dashboard/summary/range', { params:{from:f,to:t} }),

@@ -24,6 +24,7 @@ public class User {
     @Column(nullable = false) @Builder.Default             private boolean deleted = false;
     @Column(nullable = false) @Builder.Default             private int failedLoginAttempts = 0;
     private LocalDateTime lockedUntil;
+    private LocalDateTime passwordChangedAt;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp private LocalDateTime updatedAt;
 
