@@ -32,13 +32,12 @@ public class PasswordResetService {
         userRepository.findByEmailAndDeletedFalse(req.getEmail().toLowerCase().trim())
                 .ifPresent(user -> {
                     tokenRepository.invalidateAllForUser(user.getId());
-                    String token = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
+                    String token = UUID.randomUUID().toString().replace("-", "")
+                            + UUID.randomUUID().toString().replace("-", "");
                     tokenRepository.save(PasswordResetToken.builder()
                             .user(user).token(token)
                             .expiresAt(LocalDateTime.now().plusMinutes(30)).build());
                     emailService.sendPasswordResetEmail(user.getEmail(), token, user.getUsername());
-                    auditService.log(AuditAction.PASSWORD_CHANGED, user.getUsername(),
-                            "Password reset requested", null);
                 });
     }
 
@@ -53,7 +52,7 @@ public class PasswordResetService {
 
         User user = prt.getUser();
         if (passwordEncoder.matches(req.getNewPassword(), user.getPassword()))
-            throw new BadRequestException("New password must differ from current password");
+            throw new BadRequestException("New password must differ from your current password");
 
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         user.setPasswordChangedAt(LocalDateTime.now());
@@ -63,9 +62,8 @@ public class PasswordResetService {
         prt.setUsed(true);
         tokenRepository.save(prt);
         refreshTokenService.revokeAll(user.getId());
-
         emailService.sendPasswordChangedNotification(user.getEmail(), user.getUsername());
         auditService.log(AuditAction.PASSWORD_CHANGED, user.getUsername(),
-                "Password reset completed", null);
+                "Password reset via email", null);
     }
 }

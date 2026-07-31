@@ -9,10 +9,8 @@ import com.finance.dashboard.exception.BadRequestException;
 import com.finance.dashboard.exception.ResourceNotFoundException;
 import com.finance.dashboard.model.User;
 import com.finance.dashboard.model.enums.AuditAction;
-import com.finance.dashboard.repository.RefreshTokenRepository;
 import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.security.JwtUtils;
-import com.finance.dashboard.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +18,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -37,11 +33,9 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final AuditService auditService;
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
@@ -113,16 +107,14 @@ public class AuthService {
         String newRefresh = jwtUtils.generateRefreshToken(username);
         refreshTokenService.create(user, newRefresh);
 
-        String role = "ROLE_" + user.getRole().name();
         auditService.log(AuditAction.TOKEN_REFRESH, username, "Token refreshed", null);
-        return buildResponse(user, jwtUtils.generateAccessToken(username, role), newRefresh);
+        return buildResponse(user, jwtUtils.generateAccessToken(username, "ROLE_" + user.getRole().name()), newRefresh);
     }
 
     @Transactional
     public void logout(LogoutRequest req) {
-        if (req.getRefreshToken() != null && !req.getRefreshToken().isBlank()) {
+        if (req.getRefreshToken() != null && !req.getRefreshToken().isBlank())
             refreshTokenService.revoke(req.getRefreshToken());
-        }
     }
 
     @Transactional
@@ -135,13 +127,9 @@ public class AuthService {
 
     private AuthResponse buildResponse(User user, String accessToken, String refreshToken) {
         return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .tokenType("Bearer")
-                .expiresIn(jwtExpirationMs / 1000)
-                .username(user.getUsername())
-                .fullName(user.getFullName())
-                .role(user.getRole())
+                .accessToken(accessToken).refreshToken(refreshToken)
+                .tokenType("Bearer").expiresIn(jwtExpirationMs / 1000)
+                .username(user.getUsername()).fullName(user.getFullName()).role(user.getRole())
                 .build();
     }
 }

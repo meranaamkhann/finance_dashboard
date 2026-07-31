@@ -85,8 +85,12 @@ export const usersApi        = {
   deactivate:     id => api.patch(`/users/${id}/deactivate`),
   delete:         id => api.delete(`/users/${id}`),
 }
-export const auditApi        = {
-  getAll:    p        => api.get('/audit', { params:p }),
-  getByActor:(u,p)    => api.get(`/audit/by-actor/${u}`, { params:p }),
+export const authApi = {
+  login:          d  => api.post('/auth/login', d),
+  loginByEmail:   d  => api.post('/auth/login/email', d),
+  refresh:        rt => api.post('/auth/refresh', { refreshToken: rt }),
+  logout:         rt => api.post('/auth/logout', { refreshToken: rt }),
+  logoutAll:      () => api.post('/auth/logout-all'),
+  forgotPassword: d  => api.post('/auth/forgot-password', d),
+  resetPassword:  d  => api.post('/auth/reset-password', d),
 }
-
