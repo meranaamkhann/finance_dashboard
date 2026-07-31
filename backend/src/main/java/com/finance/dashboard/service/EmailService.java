@@ -1,5 +1,4 @@
 package com.finance.dashboard.service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,21 +27,26 @@ public class EmailService {
             msg.setFrom(fromAddress);
             msg.setTo(toEmail);
             msg.setSubject("FinancePro — Reset Your Password");
-
             String link = frontendUrl + "/reset-password?token=" + token;
-
             msg.setText(
-                    "Hi " + username + ",\n\n" +
-                    "We received a request to reset your FinancePro password.\n\n" +
-                    "Click the link below to reset it (valid for 30 minutes):\n" +
-                    link + "\n\n" +
-                    "If you did not request this, ignore this email. Your password will not change.\n\n" +
-                    "— FinancePro Team"
-            );
+                "Hi " + username + ",
 
+" +
+                "We received a request to reset your FinancePro password.
+
+" +
+                "Click the link below to reset it (valid for 30 minutes):
+" +
+                link + "
+
+" +
+                "If you did not request this, ignore this email. Your password will not change.
+
+" +
+                "— FinancePro Team"
+            );
             mailSender.send(msg);
             log.info("Password reset email sent to {}", toEmail);
-
         } catch (Exception e) {
             log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
         }
@@ -55,19 +59,26 @@ public class EmailService {
             msg.setFrom(fromAddress);
             msg.setTo(toEmail);
             msg.setSubject("FinancePro — New Login Detected");
-
             msg.setText(
-                    "Hi " + username + ",\n\n" +
-                    "A new login was detected on your FinancePro account.\n\n" +
-                    "IP Address: " + ipAddress + "\n" +
-                    "Time: " + java.time.LocalDateTime.now() + "\n\n" +
-                    "If this was you, no action is needed.\n" +
-                    "If you did not log in, change your password immediately.\n\n" +
-                    "— FinancePro Team"
+                "Hi " + username + ",
+
+" +
+                "A new login was detected on your FinancePro account.
+
+" +
+                "IP Address: " + ipAddress + "
+" +
+                "Time: " + java.time.LocalDateTime.now() + "
+
+" +
+                "If this was you, no action is needed.
+" +
+                "If you did not log in, change your password immediately.
+
+" +
+                "— FinancePro Team"
             );
-
             mailSender.send(msg);
-
         } catch (Exception e) {
             log.error("Failed to send login notification to {}: {}", toEmail, e.getMessage());
         }
@@ -80,16 +91,19 @@ public class EmailService {
             msg.setFrom(fromAddress);
             msg.setTo(toEmail);
             msg.setSubject("FinancePro — Password Changed");
-
             msg.setText(
-                    "Hi " + username + ",\n\n" +
-                    "Your FinancePro password was successfully changed.\n\n" +
-                    "If you did not make this change, contact support immediately.\n\n" +
-                    "— FinancePro Team"
+                "Hi " + username + ",
+
+" +
+                "Your FinancePro password was successfully changed.
+
+" +
+                "If you did not make this change, contact support immediately.
+
+" +
+                "— FinancePro Team"
             );
-
             mailSender.send(msg);
-
         } catch (Exception e) {
             log.error("Failed to send password changed notification: {}", e.getMessage());
         }
