@@ -232,7 +232,7 @@ export default function LandingPage() {
             <span className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>FinancePro</span>
           </div>
           <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-            Built by Asad Khan · github.com/meranaamkhann · {new Date().getFullYear()}
+            Designed & built by Asad Khan    © 2026 All rights reserved. · {new Date().getFullYear()}
           </p>
           <div className="flex gap-4">
             {['Privacy','Terms','Contact'].map(l => (
