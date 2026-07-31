@@ -43,6 +43,14 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(c -> c.configurationSource(corsSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex
+    .authenticationEntryPoint((request, response, authException) -> {
+        response.sendError(
+            jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED,
+            authException.getMessage()
+        );
+    })
+)
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(
                     "/api/auth/**",

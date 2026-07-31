@@ -21,8 +21,11 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class BudgetServiceTest {
     @Mock BudgetRepository budgetRepository;
     @Mock FinancialRecordRepository recordRepository;
@@ -34,9 +37,9 @@ class BudgetServiceTest {
 
     @BeforeEach void setUp() {
         user = User.builder().id(1L).username("admin").role(Role.ADMIN).active(true).build();
-        when(securityUtils.getCurrentUser()).thenReturn(user);
-        when(securityUtils.getCurrentUserId()).thenReturn(1L);
-        when(securityUtils.getCurrentUsername()).thenReturn("admin");
+       lenient().when(securityUtils.getCurrentUser()).thenReturn(user);
+        lenient().when(securityUtils.getCurrentUserId()).thenReturn(1L);
+        lenient().when(securityUtils.getCurrentUsername()).thenReturn("admin");
     }
 
     @Test void create_noOverlap_succeeds() {
