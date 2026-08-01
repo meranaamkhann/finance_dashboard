@@ -1,5 +1,4 @@
-package com.finance.dashboard.controller;
-
+package main.java.com.finance.dashboard.controller;
 import com.finance.dashboard.dto.request.CreateOrderRequest;
 import com.finance.dashboard.dto.request.VerifyPaymentRequest;
 import com.finance.dashboard.dto.response.ApiResponse;
@@ -19,8 +18,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.http.HttpHeaders;
+import java.net.http.HttpHeaders;
 import java.util.List;
 import java.util.Map;
+import com.finance.dashboard.service.InvoiceService;
 
 @RestController
 @RequestMapping("/api/billing")
@@ -33,6 +36,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final SubscriptionService subscriptionService;
     private final SecurityUtils securityUtils;
+    private final InvoiceService invoiceService;
 
     @PostMapping("/orders")
     @Operation(summary = "Create Razorpay order for a plan")
@@ -71,6 +75,17 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<List<SubscriptionResponse>>> getSubscriptionHistory() {
         Long uid = securityUtils.getCurrentUserId();
         return ResponseEntity.ok(ApiResponse.ok(subscriptionService.getHistory(uid)));
+    }
+     
+    @GetMapping("/payments/{id}/invoice")
+    @Operation(summary = "Download PDF invoice for a payment")
+    public ResponseEntity<byte[]> downloadInvoice(@PathVariable Long id) {
+        byte[] pdf = invoiceService.generateInvoicePdf(id);
+        String filename = "invoice-" + id + ".pdf";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @PostMapping("/cancel")

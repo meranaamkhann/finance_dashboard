@@ -72,7 +72,7 @@ public class Plan {
     @Builder.Default
     private int sortOrder = 0;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "plan_features", joinColumns = @JoinColumn(name = "plan_id"))
     @Column(name = "feature", length = 200)
     private List<String> features;

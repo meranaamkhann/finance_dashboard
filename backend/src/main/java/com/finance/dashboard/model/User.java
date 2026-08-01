@@ -25,6 +25,18 @@ public class User {
     @Column(nullable = false) @Builder.Default             private int failedLoginAttempts = 0;
     private LocalDateTime lockedUntil;
     private LocalDateTime passwordChangedAt;
+    @Column(length = 50)
+    private String provider;
+
+    @Column(length = 200)
+    private String providerId;
+
+    @Column(length = 500)
+    private String avatarUrl;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp private LocalDateTime updatedAt;
 

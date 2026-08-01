@@ -1,5 +1,9 @@
 package com.finance.dashboard.config;
+
+import com.finance.dashboard.security.CustomOAuth2UserService;
 import com.finance.dashboard.security.JwtAuthenticationFilter;
+import com.finance.dashboard.security.OAuth2AuthenticationFailureHandler;
+import com.finance.dashboard.security.OAuth2AuthenticationSuccessHandler;
 import com.finance.dashboard.security.RateLimitingFilter;
 import com.finance.dashboard.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,9 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtFilter;
     private final RateLimitingFilter rateLimitFilter;
+    private final CustomOAuth2UserService oAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2FailureHandler;
 
     @Value("${spring.profiles.active:dev}") private String profile;
 
@@ -43,21 +50,11 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(c -> c.configurationSource(corsSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex -> ex
-    .authenticationEntryPoint((request, response, authException) -> {
-        response.sendError(
-            jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED,
-            authException.getMessage()
-        );
-    })
-)
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(
-                    "/api/auth/**",
-                    "/api/plans/**",
-                    "/api/landing/**",
+                    "/api/auth/**", "/api/plans/**",
                     "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                    "/actuator/health"
+                    "/actuator/health", "/login/oauth2/**", "/oauth2/**"
                 ).permitAll();
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                 if ("dev".equalsIgnoreCase(profile))
@@ -70,13 +67,18 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.PUT,    "/api/records/**").hasRole("ADMIN");
                 auth.requestMatchers(HttpMethod.DELETE, "/api/records/**").hasRole("ADMIN");
                 auth.requestMatchers(
-                    "/api/records/export/csv", "/api/budgets/**", "/api/recurring/**",
+                    "/api/records/export/**", "/api/budgets/**", "/api/recurring/**",
                     "/api/dashboard/categories", "/api/dashboard/trends/**",
                     "/api/dashboard/health-score", "/api/dashboard/top-expenses",
                     "/api/dashboard/spending-by-day", "/api/dashboard/summary/range"
                 ).hasAnyRole("ANALYST", "ADMIN");
                 auth.anyRequest().authenticated();
             })
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
+            )
             .headers(h -> {
                 if ("dev".equalsIgnoreCase(profile))
                     h.frameOptions(f -> f.sameOrigin());
