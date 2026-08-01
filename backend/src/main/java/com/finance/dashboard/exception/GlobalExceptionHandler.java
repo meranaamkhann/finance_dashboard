@@ -1,7 +1,7 @@
 package com.finance.dashboard.exception;
 import com.finance.dashboard.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
-import main.java.com.finance.dashboard.exception.SubscriptionLimitException;
+import com.finance.dashboard.exception.SubscriptionLimitException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

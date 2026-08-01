@@ -66,13 +66,18 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle/>
+            <button onClick={() => nav('/pricing')}
+                className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}>
+                Pricing
+              </button>
             {user ? (
               <button onClick={() => nav('/dashboard')} className="btn-primary text-xs px-4 py-2">
                 Go to Dashboard
               </button>
             ) : (
               <>
-                <button onClick={() => nav('/login')}
+                <button onClick={() => nav('/pricing')}
                   className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                   style={{ color: 'var(--text-muted)' }}>
                   Sign In

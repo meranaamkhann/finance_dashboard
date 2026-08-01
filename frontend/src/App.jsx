@@ -16,6 +16,7 @@ import AnalyticsPage from './pages/AnalyticsPage'
 import UsersPage from './pages/UsersPage'
 import AuditPage from './pages/AuditPage'
 import Spinner from './components/ui/Spinner'
+import PricingPage from './pages/PricingPage'
 
 function Guard({ children, analyst = false, admin = false }) {
   const { user, loading, isAdmin, isAnalyst } = useAuth()
@@ -55,6 +56,7 @@ function AppRoutes() {
       <Route path="/users"          element={<Guard admin><AppLayout><UsersPage/></AppLayout></Guard>}/>
       <Route path="/audit"          element={<Guard admin><AppLayout><AuditPage/></AppLayout></Guard>}/>
 
+      <Route path="/pricing"        element={<PricingPage/>}/>
       <Route path="*" element={<Navigate to="/" replace/>}/>
     </Routes>
   )
