@@ -97,4 +97,18 @@ public class EmailService {
         mailSender.send(msg);
         log.info("Email sent: {} to {}", subject, to);
     }
+    @Async
+    public void sendLoginNotification(String toEmail, String username, String ip) {
+        sendLoginAlert(toEmail, username, ip);
+    }
+
+    @Async
+    public void sendPasswordResetEmail(String toEmail, String token, String username) {
+        sendPasswordReset(toEmail, token, username);
+    }
+
+    @Async
+    public void sendPasswordChangedNotification(String toEmail, String username) {
+        sendPasswordChanged(toEmail, username);
+    }
 }
