@@ -1,6 +1,8 @@
 package com.finance.dashboard.exception;
 import com.finance.dashboard.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import main.java.com.finance.dashboard.exception.SubscriptionLimitException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -89,6 +91,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleSpringLocked(LockedException ex) {
         return ResponseEntity.status(HttpStatus.LOCKED)
                 .body(ApiResponse.error("Account locked due to too many failed login attempts"));
+    }
+    
+        @ExceptionHandler(SubscriptionLimitException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSubscriptionLimit(SubscriptionLimitException ex) {
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

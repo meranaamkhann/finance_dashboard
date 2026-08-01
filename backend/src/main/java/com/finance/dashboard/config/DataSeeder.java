@@ -1,5 +1,7 @@
 package com.finance.dashboard.config;
-
+import com.finance.dashboard.repository.PlanRepository;
+import com.finance.dashboard.model.Plan;
+import java.math.BigDecimal;
 import com.finance.dashboard.model.Budget;
 import com.finance.dashboard.model.FinancialRecord;
 import com.finance.dashboard.model.RecurringTransaction;
@@ -36,10 +38,41 @@ public class DataSeeder {
     private final BudgetRepository             budgetRepo;
     private final RecurringTransactionRepository recurringRepo;
     private final PasswordEncoder              encoder;
+    private final PlanRepository planRepo;
 
     @Bean
     CommandLineRunner seed() {
-        return args -> {
+        if (planRepo.count() == 0) {
+        planRepo.save(Plan.builder()
+            .name("Free").slug("free").description("Get started at no cost")
+            .monthlyPrice(BigDecimal.ZERO).yearlyPrice(BigDecimal.ZERO)
+            .maxRecords(100).maxBudgets(3).maxRecurring(3).maxExports(5).maxUsers(1)
+            .apiAccess(false).prioritySupport(false).sortOrder(0).visible(true).active(true)
+            .features(java.util.List.of("100 records/month","3 budgets","Basic dashboard","CSV export"))
+            .build());
+
+        planRepo.save(Plan.builder()
+            .name("Pro").slug("pro").description("For serious finance tracking")
+            .monthlyPrice(new BigDecimal("299")).yearlyPrice(new BigDecimal("2990"))
+            .maxRecords(Integer.MAX_VALUE).maxBudgets(Integer.MAX_VALUE)
+            .maxRecurring(Integer.MAX_VALUE).maxExports(Integer.MAX_VALUE).maxUsers(1)
+            .apiAccess(false).prioritySupport(true).sortOrder(1).visible(true).active(true)
+            .features(java.util.List.of("Unlimited records","Unlimited budgets",
+                "Full analytics","CSV export","Recurring automation","Priority support"))
+            .build());
+
+        planRepo.save(Plan.builder()
+            .name("Team").slug("team").description("For teams and businesses")
+            .monthlyPrice(new BigDecimal("799")).yearlyPrice(new BigDecimal("7990"))
+            .maxRecords(Integer.MAX_VALUE).maxBudgets(Integer.MAX_VALUE)
+            .maxRecurring(Integer.MAX_VALUE).maxExports(Integer.MAX_VALUE).maxUsers(5)
+            .apiAccess(true).prioritySupport(true).sortOrder(2).visible(true).active(true)
+            .features(java.util.List.of("Everything in Pro","5 users","RBAC","Audit trail","API access"))
+            .build());
+
+        log.info("Plans seeded: Free, Pro, Team");
+    }
+            return args -> {
             if (userRepo.count() > 0) {
                 log.info("DataSeeder: data exists, skipping");
                 return;

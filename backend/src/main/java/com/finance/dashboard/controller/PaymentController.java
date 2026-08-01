@@ -1,46 +1,83 @@
 package com.finance.dashboard.controller;
+
+import com.finance.dashboard.dto.request.CreateOrderRequest;
+import com.finance.dashboard.dto.request.VerifyPaymentRequest;
 import com.finance.dashboard.dto.response.ApiResponse;
+import com.finance.dashboard.dto.response.PagedResponse;
+import com.finance.dashboard.dto.response.PaymentResponse;
+import com.finance.dashboard.dto.response.SubscriptionResponse;
+import com.finance.dashboard.service.PaymentService;
+import com.finance.dashboard.service.SubscriptionService;
 import com.finance.dashboard.util.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/billing")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
+@Tag(name = "Billing", description = "Payments, subscriptions and invoices")
+@SecurityRequirement(name = "bearerAuth")
 public class PaymentController {
 
-    @Value("${razorpay.key.id:}")
-    private String razorpayKeyId;
-
+    private final PaymentService paymentService;
+    private final SubscriptionService subscriptionService;
     private final SecurityUtils securityUtils;
 
-    @GetMapping("/config")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, String>>> getConfig() {
-        return ResponseEntity.ok(ApiResponse.ok(Map.of(
-            "keyId", razorpayKeyId,
-            "currency", "INR"
-        )));
+    @PostMapping("/orders")
+    @Operation(summary = "Create Razorpay order for a plan")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(
+            @Valid @RequestBody CreateOrderRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok(paymentService.createOrder(req)));
     }
 
     @PostMapping("/verify")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Map<String, String>>> verify(
-            @RequestBody Map<String, String> payload) {
-        String orderId   = payload.get("razorpay_order_id");
-        String paymentId = payload.get("razorpay_payment_id");
-        String signature = payload.get("razorpay_signature");
+    @Operation(summary = "Verify Razorpay payment signature and activate subscription")
+    public ResponseEntity<ApiResponse<PaymentResponse>> verify(
+            @Valid @RequestBody VerifyPaymentRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok("Payment verified and subscription activated",
+                paymentService.verifyAndActivate(req)));
+    }
 
-        log.info("Payment verification: orderId={} paymentId={} user={}",
-                orderId, paymentId, securityUtils.getCurrentUsername());
+    @GetMapping("/payments")
+    @Operation(summary = "My payment history")
+    public ResponseEntity<ApiResponse<PagedResponse<PaymentResponse>>> getPayments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        var result = paymentService.getHistory(
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
+        return ResponseEntity.ok(ApiResponse.ok(new PagedResponse<>(result)));
+    }
 
-        return ResponseEntity.ok(ApiResponse.ok("Payment received. Plan activation coming soon.",
-                Map.of("paymentId", paymentId, "status", "success")));
+    @GetMapping("/subscription")
+    @Operation(summary = "My current active subscription")
+    public ResponseEntity<ApiResponse<SubscriptionResponse>> getSubscription() {
+        Long uid = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(ApiResponse.ok(subscriptionService.getCurrentSubscription(uid)));
+    }
+
+    @GetMapping("/subscriptions")
+    @Operation(summary = "My full subscription history")
+    public ResponseEntity<ApiResponse<List<SubscriptionResponse>>> getSubscriptionHistory() {
+        Long uid = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(ApiResponse.ok(subscriptionService.getHistory(uid)));
+    }
+
+    @PostMapping("/cancel")
+    @Operation(summary = "Cancel current subscription")
+    public ResponseEntity<ApiResponse<Void>> cancel(
+            @RequestParam(required = false, defaultValue = "") String reason) {
+        subscriptionService.cancel(securityUtils.getCurrentUserId(), reason);
+        return ResponseEntity.ok(ApiResponse.ok("Subscription cancelled", null));
     }
 }
