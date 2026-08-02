@@ -1,4 +1,4 @@
-package main.java.com.finance.dashboard.controller;
+package com.finance.dashboard.controller;
 import com.finance.dashboard.dto.request.CreateOrderRequest;
 import com.finance.dashboard.dto.request.VerifyPaymentRequest;
 import com.finance.dashboard.dto.response.ApiResponse;
