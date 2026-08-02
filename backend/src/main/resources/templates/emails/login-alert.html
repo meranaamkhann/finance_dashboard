@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Login Detected</title>
+</head>
+<body style="font-family: Arial, sans-serif;">
+    <h2>Hello <span th:text="${username}">User</span>,</h2>
+
+    <p>We detected a new login to your FinancePro account.</p>
+
+    <p><strong>IP Address:</strong>
+        <span th:text="${ipAddress}"></span>
+    </p>
+
+    <p><strong>Login Time:</strong>
+        <span th:text="${loginTime}"></span>
+    </p>
+
+    <p>If this was you, no action is required.</p>
+
+    <p>If this wasn't you, please reset your password immediately.</p>
+
+    <p>
+        <a th:href="${changePasswordLink}">
+            Reset Password
+        </a>
+    </p>
+
+    <hr>
+
+    <p>FinancePro Security Team</p>
+</body>
+</html>
