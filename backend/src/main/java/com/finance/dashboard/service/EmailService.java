@@ -31,12 +31,11 @@ public class EmailService {
     public void sendPasswordReset(String toEmail, String token, String username) {
         try {
             Context ctx = new Context();
-            ctx.setVariable("username", username);
+            ctx.setVariable("username",  username);
             ctx.setVariable("resetLink", frontendUrl + "/reset-password?token=" + token);
-            sendHtml(toEmail, "FinancePro — Reset Your Password",
-                    "emails/password-reset", ctx);
+            sendHtml(toEmail, "FinancePro — Reset Your Password", "emails/password-reset", ctx);
         } catch (Exception e) {
-            log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
+            log.error("sendPasswordReset failed for {}: {}", toEmail, e.getMessage());
         }
     }
 
@@ -44,16 +43,20 @@ public class EmailService {
     public void sendLoginAlert(String toEmail, String username, String ip) {
         try {
             Context ctx = new Context();
-            ctx.setVariable("username", username);
-            ctx.setVariable("ipAddress", ip);
+            ctx.setVariable("username",           username);
+            ctx.setVariable("ipAddress",          ip != null ? ip : "unknown");
             ctx.setVariable("loginTime",
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a z")));
             ctx.setVariable("changePasswordLink", frontendUrl + "/forgot-password");
-            sendHtml(toEmail, "FinancePro — New Login Detected",
-                    "emails/login-alert", ctx);
+            sendHtml(toEmail, "FinancePro — New Login Detected", "emails/login-alert", ctx);
         } catch (Exception e) {
-            log.error("Failed to send login alert to {}: {}", toEmail, e.getMessage());
+            log.error("sendLoginAlert failed for {}: {}", toEmail, e.getMessage());
         }
+    }
+
+    @Async
+    public void sendLoginNotification(String toEmail, String username, String ip) {
+        sendLoginAlert(toEmail, username, ip);
     }
 
     @Async
@@ -61,17 +64,21 @@ public class EmailService {
         try {
             Context ctx = new Context();
             ctx.setVariable("username", username);
-            sendHtml(toEmail, "FinancePro — Password Changed",
-                    "emails/password-changed", ctx);
+            sendHtml(toEmail, "FinancePro — Password Changed", "emails/password-changed", ctx);
         } catch (Exception e) {
-            log.error("Failed to send password changed email: {}", e.getMessage());
+            log.error("sendPasswordChanged failed: {}", e.getMessage());
         }
     }
 
     @Async
+    public void sendPasswordChangedNotification(String toEmail, String username) {
+        sendPasswordChanged(toEmail, username);
+    }
+
+    @Async
     public void sendPaymentSuccess(String toEmail, String username, String invoiceNumber,
-                                    String planName, String billingCycle,
-                                    String validUntil, String amount) {
+                                   String planName, String billingCycle,
+                                   String validUntil, String amount) {
         try {
             Context ctx = new Context();
             ctx.setVariable("username",      username);
@@ -79,36 +86,22 @@ public class EmailService {
             ctx.setVariable("planName",      planName);
             ctx.setVariable("billingCycle",  billingCycle);
             ctx.setVariable("validUntil",    validUntil);
-            ctx.setVariable("amount",        "₹" + amount);
-            sendHtml(toEmail, "FinancePro — Payment Successful & Invoice",
-                    "emails/payment-success", ctx);
+            ctx.setVariable("amount",        "Rs." + amount);
+            sendHtml(toEmail, "FinancePro — Payment Successful", "emails/payment-success", ctx);
         } catch (Exception e) {
-            log.error("Failed to send payment success email: {}", e.getMessage());
+            log.error("sendPaymentSuccess failed: {}", e.getMessage());
         }
     }
 
     private void sendHtml(String to, String subject, String template, Context ctx) throws Exception {
+        String html = templateEngine.process(template, ctx);
         MimeMessage msg = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
         helper.setFrom(from);
         helper.setTo(to);
         helper.setSubject(subject);
-        helper.setText(templateEngine.process(template, ctx), true);
+        helper.setText(html, true);
         mailSender.send(msg);
-        log.info("Email sent: {} to {}", subject, to);
-    }
-    @Async
-    public void sendLoginNotification(String toEmail, String username, String ip) {
-        sendLoginAlert(toEmail, username, ip);
-    }
-
-    @Async
-    public void sendPasswordResetEmail(String toEmail, String token, String username) {
-        sendPasswordReset(toEmail, token, username);
-    }
-
-    @Async
-    public void sendPasswordChangedNotification(String toEmail, String username) {
-        sendPasswordChanged(toEmail, username);
+        log.info("Email sent [{}] to {}", subject, to);
     }
 }
