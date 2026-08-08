@@ -52,8 +52,8 @@ public class SecurityConfig {
 
     @Value("${spring.profiles.active:dev}") private String profile;
     @Value("${app.oauth2.enabled:false}")
-private boolean oauth2Enabled;
-
+    private boolean oauth2Enabled;
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -74,17 +74,22 @@ private boolean oauth2Enabled;
                     "/login/oauth2/**",
                     "/oauth2/**"
                 ).permitAll();
+
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
                 if ("dev".equalsIgnoreCase(profile))
                     auth.requestMatchers("/h2-console/**").permitAll();
+
                 auth.requestMatchers("/actuator/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/users/me", "/api/users/me/**").authenticated();
                 auth.requestMatchers("/api/users/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/audit/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.POST,   "/api/records").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.PUT,    "/api/records/**").hasRole("ADMIN");
+
+                auth.requestMatchers(HttpMethod.POST, "/api/records").hasRole("ADMIN");
+                auth.requestMatchers(HttpMethod.PUT, "/api/records/**").hasRole("ADMIN");
                 auth.requestMatchers(HttpMethod.DELETE, "/api/records/**").hasRole("ADMIN");
+
                 auth.requestMatchers(
                     "/api/records/export/**",
                     "/api/budgets/**",
@@ -96,29 +101,36 @@ private boolean oauth2Enabled;
                     "/api/dashboard/spending-by-day",
                     "/api/dashboard/summary/range"
                 ).hasAnyRole("ANALYST", "ADMIN");
+
                 auth.anyRequest().authenticated();
             })
-                if (oauth2Enabled) {
-                    http.oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler)
-                    );
-                }
             .headers(h -> {
-                if ("dev".equalsIgnoreCase(profile))
+                if ("dev".equalsIgnoreCase(profile)) {
                     h.frameOptions(f -> f.sameOrigin());
-                else {
+                } else {
                     h.frameOptions(f -> f.deny());
                     h.contentSecurityPolicy(c -> c.policyDirectives(
-                        "default-src 'self'; frame-ancestors 'none'"));
+                        "default-src 'self'; frame-ancestors 'none'"
+                    ));
                 }
+
                 h.referrerPolicy(r -> r.policy(
-                    ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
+                    ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+                ));
             })
             .authenticationProvider(authProvider())
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // OAuth2 is enabled only when explicitly configured.
+        if (oauth2Enabled) {
+            http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
+            );
+        }
+
         return http.build();
     }
 
