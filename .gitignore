@@ -6,6 +6,8 @@ backend/target/
 
 # Environment
 .env
+.env.*
+!.env.example
 *.env.local
 application-prod.properties.local
 
