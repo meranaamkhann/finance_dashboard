@@ -4,63 +4,77 @@ import { authApi, usersApi } from '../services/api'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser]         = useState(null)
-  const [loading, setLoading]   = useState(true)
-  const autoLogoutRef           = useRef(null)
+  const [user, setUser]       = useState(null)
+  const [loading, setLoading] = useState(true)
+  const timerRef              = useRef(null)
 
-  const clearAutoLogout = () => {
-    if (autoLogoutRef.current) clearTimeout(autoLogoutRef.current)
+  const clearTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
   }
 
-  const scheduleAutoLogout = useCallback((expiresIn) => {
-    clearAutoLogout()
-    const warnAt = (expiresIn - 300) * 1000
-    if (warnAt > 0) {
-      autoLogoutRef.current = setTimeout(() => {
+  const scheduleWarning = useCallback((expiresIn) => {
+    clearTimer()
+    const ms = (expiresIn - 300) * 1000
+    if (ms > 0) {
+      timerRef.current = setTimeout(() => {
         window.dispatchEvent(new CustomEvent('session-expiring'))
-      }, warnAt)
+      }, ms)
     }
   }, [])
 
-  const storeTokens = (data) => {
-    localStorage.setItem('accessToken',    data.accessToken)
-    localStorage.setItem('refreshToken',   data.refreshToken)
-    localStorage.setItem('tokenExpiresAt', String(Date.now() + data.expiresIn * 1000))
-    scheduleAutoLogout(data.expiresIn)
-  }
+  const storeTokens = useCallback((data) => {
+    try {
+      localStorage.setItem('accessToken',    data.accessToken)
+      localStorage.setItem('refreshToken',   data.refreshToken)
+      localStorage.setItem('tokenExpiresAt', String(Date.now() + data.expiresIn * 1000))
+      scheduleWarning(data.expiresIn)
+    } catch {}
+  }, [scheduleWarning])
 
-  const clearStorage = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('tokenExpiresAt')
-    clearAutoLogout()
-  }
+  const clearStorage = useCallback(() => {
+    try {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('tokenExpiresAt')
+    } catch {}
+    clearTimer()
+  }, [])
 
   const loadUser = useCallback(async () => {
-    const token     = localStorage.getItem('accessToken')
-    const expiresAt = localStorage.getItem('tokenExpiresAt')
-    if (!token) { setLoading(false); return }
-    if (expiresAt && Date.now() > Number(expiresAt)) {
-      const refresh = localStorage.getItem('refreshToken')
-      if (refresh) {
+    try {
+      const token     = localStorage.getItem('accessToken')
+      const expiresAt = localStorage.getItem('tokenExpiresAt')
+
+      if (!token) { setLoading(false); return }
+
+      if (expiresAt && Date.now() > Number(expiresAt)) {
+        const refresh = localStorage.getItem('refreshToken')
+        if (!refresh) { clearStorage(); setLoading(false); return }
         try {
           const { data } = await authApi.refresh(refresh)
           storeTokens(data.data)
-        } catch { clearStorage(); setLoading(false); return }
-      } else { clearStorage(); setLoading(false); return }
-    }
-    try {
+        } catch {
+          clearStorage(); setLoading(false); return
+        }
+      }
+
       const { data } = await usersApi.getMe()
       setUser(data.data)
-      const remaining = expiresAt
-        ? Math.floor((Number(expiresAt) - Date.now()) / 1000)
-        : 86400
-      scheduleAutoLogout(remaining)
-    } catch { clearStorage() }
-    finally { setLoading(false) }
-  }, [scheduleAutoLogout])
+      const exAt = localStorage.getItem('tokenExpiresAt')
+      if (exAt) {
+        scheduleWarning(Math.floor((Number(exAt) - Date.now()) / 1000))
+      }
+    } catch {
+      clearStorage()
+    } finally {
+      setLoading(false)
+    }
+  }, [clearStorage, storeTokens, scheduleWarning])
 
-  useEffect(() => { loadUser() }, [loadUser])
+  useEffect(() => {
+    loadUser()
+    return () => clearTimer()
+  }, [loadUser])
 
   const login = async (creds) => {
     const { data } = await authApi.login(creds)
@@ -77,8 +91,10 @@ export function AuthProvider({ children }) {
   }
 
   const logout = async () => {
-    const refresh = localStorage.getItem('refreshToken')
-    try { if (refresh) await authApi.logout(refresh) } catch {}
+    try {
+      const refresh = localStorage.getItem('refreshToken')
+      if (refresh) await authApi.logout(refresh)
+    } catch {}
     clearStorage()
     setUser(null)
     window.location.href = '/'
@@ -94,4 +110,8 @@ export function AuthProvider({ children }) {
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
+  return ctx
+}
