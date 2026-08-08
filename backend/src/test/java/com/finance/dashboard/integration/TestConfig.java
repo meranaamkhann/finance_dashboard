@@ -1,14 +1,16 @@
 package com.finance.dashboard.integration;
+
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/** Overrides BCrypt strength to 4 in tests (vs 12 in prod) — 100x faster seeding */
 @TestConfiguration
 public class TestConfig {
-    @Bean @Primary
+
+    @Bean
+    @Primary
     public PasswordEncoder testPasswordEncoder() {
         return new BCryptPasswordEncoder(4);
     }
