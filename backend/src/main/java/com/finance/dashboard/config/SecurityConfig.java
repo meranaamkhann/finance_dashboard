@@ -51,6 +51,8 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Value("${spring.profiles.active:dev}") private String profile;
+    @Value("${app.oauth2.enabled:false}")
+private boolean oauth2Enabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -96,11 +98,13 @@ public class SecurityConfig {
                 ).hasAnyRole("ANALYST", "ADMIN");
                 auth.anyRequest().authenticated();
             })
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
-                .successHandler(oAuth2SuccessHandler)
-                .failureHandler(oAuth2FailureHandler)
-            )
+                if (oauth2Enabled) {
+                    http.oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                    );
+                }
             .headers(h -> {
                 if ("dev".equalsIgnoreCase(profile))
                     h.frameOptions(f -> f.sameOrigin());
