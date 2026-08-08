@@ -1,4 +1,5 @@
 package com.finance.dashboard.repository;
+
 import com.finance.dashboard.model.Notification;
 import com.finance.dashboard.model.enums.NotificationType;
 import org.springframework.data.domain.Page;
@@ -13,14 +14,17 @@ import java.util.Optional;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
     Page<Notification> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     Page<Notification> findByUserIdAndReadFalseOrderByCreatedAtDesc(Long userId, Pageable pageable);
     long countByUserIdAndReadFalse(Long userId);
+
     Optional<Notification> findByIdAndUserId(Long id, Long userId);
-    boolean existsByUserIdAndTypeAndReadFalseAndCreatedAtAfterAndMessageContaining(
-            Long userId, NotificationType type, LocalDateTime after, String msg);
+
     @Modifying
-    @Query("UPDATE Notification n SET n.read = true, n.readAt = :now " +
-           "WHERE n.user.id = :uid AND n.read = false")
-    int markAllReadByUserId(@Param("uid") Long uid, @Param("now") LocalDateTime now);
+    @Query("UPDATE Notification n SET n.read = true, n.readAt = :now WHERE n.user.id = :userId AND n.read = false")
+    int markAllReadByUserId(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    boolean existsByUserIdAndTypeAndReadFalseAndCreatedAtAfterAndMessageContaining(
+            Long userId, NotificationType type, LocalDateTime after, String message);
 }
