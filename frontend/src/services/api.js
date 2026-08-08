@@ -49,6 +49,17 @@ export const dashboardApi    = {
   getSpendingByDay:(f,t)     => api.get('/dashboard/spending-by-day', { params:{from:f,to:t} }),
   getTopExpenses:  (f,t,l=5) => api.get('/dashboard/top-expenses', { params:{from:f,to:t,limit:l} }),
 }
+export const usersApi = {
+  getMe:          () => api.get('/users/me'),
+  updateMe:       d  => api.put('/users/me', d),
+  changePassword: d  => api.post('/users/me/change-password', d),
+  getAll:         p  => api.get('/users', { params: p }),
+  create:         d  => api.post('/users', d),
+  update:        (id, d) => api.put(`/users/${id}`, d),
+  activate:       id => api.patch(`/users/${id}/activate`),
+  deactivate:     id => api.patch(`/users/${id}/deactivate`),
+  delete:         id => api.delete(`/users/${id}`),
+}
 export const recordsApi      = {
   getAll:    p  => api.get('/records', { params:p }),
   create:    d  => api.post('/records', d),

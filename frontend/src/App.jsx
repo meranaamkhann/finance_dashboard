@@ -18,6 +18,7 @@ import AuditPage from './pages/AuditPage'
 import Spinner from './components/ui/Spinner'
 import PricingPage from './pages/PricingPage'
 import OAuth2CallbackPage from './pages/OAuth2CallbackPage'
+import ProfilePage from './pages/ProfilePage'
 
 function Guard({ children, analyst = false, admin = false }) {
   const { user, loading, isAdmin, isAnalyst } = useAuth()
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Route path="/pricing"        element={<PricingPage/>}/>
       <Route path="*" element={<Navigate to="/" replace/>}/>
       <Route path="/oauth2/callback" element={<OAuth2CallbackPage/>}/>
+      <Route path="/profile" element={<Guard><AppLayout><ProfilePage/></AppLayout></Guard>}/>
     </Routes>
   )
 }

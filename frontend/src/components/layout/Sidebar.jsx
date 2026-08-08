@@ -11,6 +11,7 @@ const NAV = [
   { to: '/notifications', icon: Bell,        label: 'Alerts',        roles: ['VIEWER','ANALYST','ADMIN'] },
   { to: '/users',     icon: Users,           label: 'Users',         roles: ['ADMIN'] },
   { to: '/audit',     icon: ClipboardList,   label: 'Audit',         roles: ['ADMIN'] },
+  { to: '/profile', icon: User, label: 'Profile', roles: ['VIEWER','ANALYST','ADMIN'] },
 ]
 
 export default function Sidebar() {
