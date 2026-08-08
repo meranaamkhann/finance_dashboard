@@ -1,5 +1,6 @@
 package com.finance.dashboard.security;
 
+import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.model.User;
 import com.finance.dashboard.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,28 +21,67 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
+    private final UserRepository userRepository;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication auth) throws IOException {
-        OAuth2UserPrincipal principal = (OAuth2UserPrincipal) auth.getPrincipal();
-        User user = principal.getUser();
+   @Override
+public void onAuthenticationSuccess(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Authentication auth) throws IOException {
 
-        String role = "ROLE_" + user.getRole().name();
-        String accessToken  = jwtUtils.generateAccessToken(user.getUsername(), role);
-        String refreshToken = jwtUtils.generateRefreshToken(user.getUsername());
-        refreshTokenService.create(user, refreshToken);
+    String email = null;
 
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/callback")
-                .queryParam("token", accessToken)
-                .queryParam("refresh", refreshToken)
-                .build().toUriString();
-
-        log.info("OAuth2 login success for user: {} via {}", user.getUsername(), user.getProvider());
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+    if (auth.getPrincipal() instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidcUser) {
+        email = oidcUser.getEmail();
+    } else if (auth.getPrincipal() instanceof OAuth2UserPrincipal principal) {
+        email = principal.getUser().getEmail();
     }
+
+    if (email == null || email.isBlank()) {
+        log.error("OAuth2 login succeeded but no email was found");
+        response.sendError(
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                "OAuth2 account email unavailable"
+        );
+        return;
+    }
+
+    User user = userRepository
+            .findByEmailAndDeletedFalse(email.toLowerCase())
+            .orElseThrow(() -> new IOException(
+                    "OAuth2 user was authenticated but not found"
+            ));
+
+    String role = "ROLE_" + user.getRole().name();
+
+    String accessToken =
+            jwtUtils.generateAccessToken(user.getUsername(), role);
+
+    String refreshToken =
+            jwtUtils.generateRefreshToken(user.getUsername());
+
+    refreshTokenService.create(user, refreshToken);
+
+    String redirectUrl =
+            UriComponentsBuilder
+                    .fromUriString(
+                            frontendUrl + "/oauth2/callback"
+                    )
+                    .queryParam("token", accessToken)
+                    .queryParam("refresh", refreshToken)
+                    .build()
+                    .toUriString();
+
+    log.info(
+            "OAuth2 login success for user: {} via {}",
+            user.getUsername(),
+            user.getProvider()
+    );
+
+    getRedirectStrategy()
+            .sendRedirect(request, response, redirectUrl);
+}
 }
