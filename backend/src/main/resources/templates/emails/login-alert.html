@@ -1,34 +1,55 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>New Login Detected</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>New Login Detected</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;padding:32px 16px}
+.wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.top{background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:36px 40px;text-align:center}
+.top h1{color:#fff;font-size:22px;font-weight:700;margin-bottom:4px}
+.top p{color:#a7f3d0;font-size:13px}
+.body{padding:36px 40px}
+.body p{color:#374151;line-height:1.65;margin-bottom:14px;font-size:15px}
+.info{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:18px;margin:16px 0}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #d1fae5;font-size:14px}
+.row:last-child{border-bottom:none}
+.lbl{color:#6b7280;font-weight:500}
+.val{color:#111827;font-weight:600}
+.btn-danger{display:block;width:fit-content;margin:20px auto;background:#dc2626;color:#fff;text-decoration:none;padding:13px 30px;border-radius:10px;font-weight:600;font-size:14px}
+.foot{text-align:center;padding:20px 40px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af}
+.foot a{color:#6b7280;text-decoration:none}
+</style>
 </head>
-<body style="font-family: Arial, sans-serif;">
-    <h2>Hello <span th:text="${username}">User</span>,</h2>
-
-    <p>We detected a new login to your FinancePro account.</p>
-
-    <p><strong>IP Address:</strong>
-        <span th:text="${ipAddress}"></span>
-    </p>
-
-    <p><strong>Login Time:</strong>
-        <span th:text="${loginTime}"></span>
-    </p>
-
-    <p>If this was you, no action is required.</p>
-
-    <p>If this wasn't you, please reset your password immediately.</p>
-
-    <p>
-        <a th:href="${changePasswordLink}">
-            Reset Password
-        </a>
-    </p>
-
-    <hr>
-
-    <p>FinancePro Security Team</p>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>🔐 New Login Detected</h1>
+    <p>FinancePro Security Alert</p>
+  </div>
+  <div class="body">
+    <p>Hi <strong th:text="${username}">User</strong>,</p>
+    <p>A new login was detected on your FinancePro account. Here are the details:</p>
+    <div class="info">
+      <div class="row">
+        <span class="lbl">IP Address</span>
+        <span class="val" th:text="${ipAddress}">0.0.0.0</span>
+      </div>
+      <div class="row">
+        <span class="lbl">Time</span>
+        <span class="val" th:text="${loginTime}">Now</span>
+      </div>
+    </div>
+    <p>If this was you, no action is needed. If you don't recognise this login, secure your account immediately.</p>
+    <a th:href="${changePasswordLink}" class="btn-danger">Secure My Account</a>
+  </div>
+  <div class="foot">
+    &copy; 2025 FinancePro &nbsp;|&nbsp;
+    <a href="#">Privacy</a> &nbsp;|&nbsp;
+    <a href="#">Support</a>
+  </div>
+</div>
 </body>
 </html>
