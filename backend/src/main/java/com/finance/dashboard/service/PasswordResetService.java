@@ -37,7 +37,7 @@ public class PasswordResetService {
                     tokenRepository.save(PasswordResetToken.builder()
                             .user(user).token(token)
                             .expiresAt(LocalDateTime.now().plusMinutes(30)).build());
-                    emailService.sendPasswordResetEmail(user.getEmail(), token, user.getUsername());
+                    emailService.sendPasswordReset(user.getEmail(), token, user.getUsername());
                 });
     }
 
