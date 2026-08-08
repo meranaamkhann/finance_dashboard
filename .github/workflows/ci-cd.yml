@@ -20,14 +20,14 @@ jobs:
           cache: maven
 
       - name: Build and test
-        working-directory: finance-dashboard/finance-dashboard
+        working-directory: backend
         run: mvn clean verify -q
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
-          path: finance-dashboard/finance-dashboard/target/surefire-reports/
+          path: backend/target/surefire-reports/
 
   frontend-build:
     name: Frontend — Build
