@@ -27,7 +27,7 @@ RUN mkdir -p /app/uploads && \
 
 USER finance
 
-ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=96m"
 
 EXPOSE 8080
 
