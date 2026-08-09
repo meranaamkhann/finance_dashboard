@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { usersApi, planApi } from '../services/api'
 import { useToast } from '../components/ui/Toast'
-import { User, Lock, CreditCard, FileText, LogOut, ExternalLink } from 'lucide-react'
+import { User, Lock, CreditCard, FileText, LogOut, ExternalLink, Eye, EyeOff } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user, logout }    = useAuth()
@@ -22,6 +22,7 @@ export default function ProfilePage() {
     newPassword:      '',
     confirmPassword:  '',
   })
+const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false })
 
   useEffect(() => {
     if (tab === 'billing') {
@@ -160,52 +161,79 @@ export default function ProfilePage() {
       )}
 
       {/* Security tab */}
-      {tab === 'security' && (
-        <div className="card p-6 space-y-4">
-          <h3 className="font-semibold" style={{ color: 'var(--text-main)' }}>
-            Change Password
-          </h3>
-          <div>
-            <label className="label">Current Password</label>
-            <input className="input" type="password"
-              value={pwForm.currentPassword}
-              onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))}
-              placeholder="Enter current password"/>
-          </div>
-          <div>
-            <label className="label">New Password</label>
-            <input className="input" type="password"
-              value={pwForm.newPassword}
-              onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))}
-              placeholder="At least 8 chars"/>
-            {pwForm.newPassword && (
-              <div className="mt-2">
-                <div className="flex gap-1 mb-1">
-                  {[0,1,2,3].map(i => (
-                    <div key={i}
-                      className={`h-1 flex-1 rounded-full transition-colors ${i < s ? sColor : 'bg-slate-200 dark:bg-slate-700'}`}/>
-                  ))}
-                </div>
-                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>{sLabel}</p>
-              </div>
-            )}
-          </div>
-          <div>
-            <label className="label">Confirm New Password</label>
-            <input className="input" type="password"
-              value={pwForm.confirmPassword}
-              onChange={e => setPwForm(f => ({ ...f, confirmPassword: e.target.value }))}
-              placeholder="Repeat new password"/>
-            {pwForm.confirmPassword && pwForm.newPassword !== pwForm.confirmPassword && (
-              <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
-            )}
-          </div>
-          <button onClick={changePassword} disabled={loading || s < 3} className="btn-primary">
-            {loading ? 'Changing…' : 'Change Password'}
-          </button>
-        </div>
-      )}
+    {tab === 'security' && (
+    <div className="card p-6 space-y-4">
+        <h3 className="font-semibold" style={{ color: 'var(--text-main)' }}>
+        Change Password
+        </h3>
 
+        <div>
+        <label className="label">Current Password</label>
+        <div className="relative">
+            <input className="input pr-10" type={showPw.current ? 'text' : 'password'}
+            value={pwForm.currentPassword}
+            onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))}
+            placeholder="Enter current password"/>
+            <button type="button"
+            onClick={() => setShowPw(s => ({ ...s, current: !s.current }))}
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: 'var(--text-faint)' }}>
+            {showPw.current ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+            </button>
+        </div>
+        </div>
+
+        <div>
+        <label className="label">New Password</label>
+        <div className="relative">
+            <input className="input pr-10" type={showPw.new ? 'text' : 'password'}
+            value={pwForm.newPassword}
+            onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))}
+            placeholder="At least 8 chars"/>
+            <button type="button"
+            onClick={() => setShowPw(s => ({ ...s, new: !s.new }))}
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: 'var(--text-faint)' }}>
+            {showPw.new ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+            </button>
+        </div>
+        {pwForm.newPassword && (
+            <div className="mt-2">
+            <div className="flex gap-1 mb-1">
+                {[0,1,2,3].map(i => (
+                <div key={i}
+                    className={`h-1 flex-1 rounded-full transition-colors ${i < s ? sColor : 'bg-slate-200 dark:bg-slate-700'}`}/>
+                ))}
+            </div>
+            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>{sLabel}</p>
+            </div>
+        )}
+        </div>
+
+        <div>
+        <label className="label">Confirm New Password</label>
+        <div className="relative">
+            <input className="input pr-10" type={showPw.confirm ? 'text' : 'password'}
+            value={pwForm.confirmPassword}
+            onChange={e => setPwForm(f => ({ ...f, confirmPassword: e.target.value }))}
+            placeholder="Repeat new password"/>
+            <button type="button"
+            onClick={() => setShowPw(s => ({ ...s, confirm: !s.confirm }))}
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: 'var(--text-faint)' }}>
+            {showPw.confirm ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+            </button>
+        </div>
+        {pwForm.confirmPassword && pwForm.newPassword !== pwForm.confirmPassword && (
+            <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+        )}
+        </div>
+
+        <button onClick={changePassword} disabled={loading || s < 3} className="btn-primary">
+        {loading ? 'Changing…' : 'Change Password'}
+        </button>
+    </div>
+    )}
       {/* Billing tab */}
       {tab === 'billing' && (
         <div className="space-y-4">
