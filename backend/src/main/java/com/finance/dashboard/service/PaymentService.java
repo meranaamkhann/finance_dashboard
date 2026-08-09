@@ -12,10 +12,13 @@ import com.finance.dashboard.model.User;
 import com.finance.dashboard.model.enums.BillingCycle;
 import com.finance.dashboard.model.enums.PaymentStatus;
 import com.finance.dashboard.repository.PaymentRepository;
-import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.util.SecurityUtils;
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,17 +38,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final PaymentRepository paymentRepository;
-    private final UserRepository userRepository;
-    private final PlanService planService;
-    private final SubscriptionService subscriptionService;
-    private final SecurityUtils securityUtils;
-
-    @Value("${razorpay.key.secret:}")
-    private String razorpaySecret;
+    private final PaymentRepository     paymentRepository;
+    private final PlanService           planService;
+    private final SubscriptionService   subscriptionService;
+    private final SecurityUtils         securityUtils;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret:}")
+    private String razorpaySecret;
 
     @Transactional
     public Map<String, Object> createOrder(CreateOrderRequest req) {
@@ -57,7 +59,7 @@ public class PaymentService {
 
         if (amount.compareTo(BigDecimal.ZERO) == 0) {
             Subscription sub = subscriptionService.activate(user, plan, req.getBillingCycle());
-            Payment payment = paymentRepository.save(Payment.builder()
+            paymentRepository.save(Payment.builder()
                     .user(user).plan(plan).subscription(sub)
                     .amount(BigDecimal.ZERO).status(PaymentStatus.SUCCESS)
                     .billingCycle(req.getBillingCycle().name())
@@ -67,24 +69,42 @@ public class PaymentService {
             return Map.of("free", true, "subscriptionId", sub.getId());
         }
 
-        String dummyOrderId = "order_" + System.currentTimeMillis();
+        int amountInPaise = amount.multiply(BigDecimal.valueOf(100)).intValue();
 
-        Payment pending = paymentRepository.save(Payment.builder()
-                .user(user).plan(plan)
-                .razorpayOrderId(dummyOrderId)
-                .amount(amount)
-                .status(PaymentStatus.PENDING)
-                .billingCycle(req.getBillingCycle().name())
-                .build());
+        try {
+            RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpaySecret);
+            JSONObject orderRequest = new JSONObject();
+            orderRequest.put("amount",   amountInPaise);
+            orderRequest.put("currency", "INR");
+            orderRequest.put("receipt",  "receipt_" + System.currentTimeMillis());
+            orderRequest.put("payment_capture", 1);
 
-        return Map.of(
-            "orderId",    dummyOrderId,
-            "amount",     amount.multiply(BigDecimal.valueOf(100)).intValue(),
-            "currency",   "INR",
-            "keyId",      razorpayKeyId,
-            "planName",   plan.getName(),
-            "billingCycle", req.getBillingCycle().name()
-        );
+            Order rzpOrder = client.orders.create(orderRequest);
+            String rzpOrderId = rzpOrder.get("id");
+
+            Payment pending = paymentRepository.save(Payment.builder()
+                    .user(user).plan(plan)
+                    .razorpayOrderId(rzpOrderId)
+                    .amount(amount)
+                    .status(PaymentStatus.PENDING)
+                    .billingCycle(req.getBillingCycle().name())
+                    .build());
+
+            log.info("Razorpay order created: {} for user: {}", rzpOrderId, user.getUsername());
+
+            return Map.of(
+                "orderId",      rzpOrderId,
+                "amount",       amountInPaise,
+                "currency",     "INR",
+                "keyId",        razorpayKeyId,
+                "planName",     plan.getName(),
+                "billingCycle", req.getBillingCycle().name()
+            );
+
+        } catch (RazorpayException e) {
+            log.error("Razorpay order creation failed: {}", e.getMessage());
+            throw new BadRequestException("Payment initialization failed: " + e.getMessage());
+        }
     }
 
     @Transactional
@@ -92,15 +112,17 @@ public class PaymentService {
         Payment payment = paymentRepository.findByRazorpayOrderId(req.getRazorpayOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Payment order not found"));
 
-        if (!verifySignature(req.getRazorpayOrderId(), req.getRazorpayPaymentId(), req.getRazorpaySignature())) {
+        if (!verifySignature(req.getRazorpayOrderId(),
+                             req.getRazorpayPaymentId(),
+                             req.getRazorpaySignature())) {
             payment.setStatus(PaymentStatus.FAILED);
             payment.setFailureReason("Signature verification failed");
             paymentRepository.save(payment);
-            throw new BadRequestException("Payment verification failed. Please contact support.");
+            throw new BadRequestException("Payment verification failed. Contact support.");
         }
 
         BillingCycle cycle = BillingCycle.valueOf(payment.getBillingCycle());
-        Subscription sub = subscriptionService.activate(payment.getUser(), payment.getPlan(), cycle);
+        Subscription sub   = subscriptionService.activate(payment.getUser(), payment.getPlan(), cycle);
 
         payment.setRazorpayPaymentId(req.getRazorpayPaymentId());
         payment.setRazorpaySignature(req.getRazorpaySignature());
@@ -110,7 +132,7 @@ public class PaymentService {
         payment.setInvoiceNumber(generateInvoiceNumber());
         paymentRepository.save(payment);
 
-        log.info("Payment verified and subscription activated for user: {}, plan: {}",
+        log.info("Payment verified — user: {} plan: {}",
                 payment.getUser().getUsername(), payment.getPlan().getName());
 
         return toResponse(payment);
@@ -118,21 +140,23 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Page<PaymentResponse> getHistory(Pageable pageable) {
-        Long userId = securityUtils.getCurrentUserId();
-        return paymentRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable)
+        return paymentRepository
+                .findAllByUserIdOrderByCreatedAtDesc(securityUtils.getCurrentUserId(), pageable)
                 .map(this::toResponse);
     }
 
     private boolean verifySignature(String orderId, String paymentId, String signature) {
         if (razorpaySecret == null || razorpaySecret.isBlank()) {
-            log.warn("Razorpay secret not configured — skipping signature verification in dev");
+            log.warn("Razorpay secret not set — skipping verification");
             return true;
         }
         try {
-            String payload = orderId + "|" + paymentId;
+            String payload  = orderId + "|" + paymentId;
             Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(razorpaySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            String computed = HexFormat.of().formatHex(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
+            mac.init(new SecretKeySpec(
+                    razorpaySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            String computed = HexFormat.of().formatHex(
+                    mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
             return computed.equals(signature);
         } catch (Exception e) {
             log.error("Signature verification error: {}", e.getMessage());
@@ -141,19 +165,23 @@ public class PaymentService {
     }
 
     private String generateInvoiceNumber() {
-        return "INV-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-                + "-" + System.currentTimeMillis() % 100000;
+        return "INV-"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                + "-" + (System.currentTimeMillis() % 100000);
     }
 
     public PaymentResponse toResponse(Payment p) {
         return PaymentResponse.builder()
                 .id(p.getId())
                 .planName(p.getPlan() != null ? p.getPlan().getName() : "")
-                .amount(p.getAmount()).currency(p.getCurrency())
-                .status(p.getStatus()).billingCycle(p.getBillingCycle())
+                .amount(p.getAmount())
+                .currency(p.getCurrency())
+                .status(p.getStatus())
+                .billingCycle(p.getBillingCycle())
                 .razorpayPaymentId(p.getRazorpayPaymentId())
                 .invoiceNumber(p.getInvoiceNumber())
-                .paidAt(p.getPaidAt()).createdAt(p.getCreatedAt())
+                .paidAt(p.getPaidAt())
+                .createdAt(p.getCreatedAt())
                 .build();
     }
 }
