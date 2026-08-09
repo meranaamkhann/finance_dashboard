@@ -121,3 +121,18 @@ export const planApi = {
   getPayments:     p       => api.get('/billing/payments', { params: p }),
   cancelSub:       reason  => api.post(`/billing/cancel?reason=${encodeURIComponent(reason || '')}`),
 }
+
+export const downloadInvoice = async (paymentId) => {
+  const token = localStorage.getItem('accessToken')
+  const res = await fetch(`http://localhost:8080/api/billing/payments/${paymentId}/invoice`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!res.ok) throw new Error('Download failed')
+  const blob = await res.blob()
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `FinancePro-Invoice-${paymentId}.pdf`
+  a.click()
+  URL.revokeObjectURL(url)
+}

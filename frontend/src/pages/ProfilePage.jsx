@@ -66,6 +66,24 @@ const [showPw, setShowPw] = useState({ current: false, new: false, confirm: fals
     } finally { setLoading(false) }
   }
 
+    const downloadInvoice = async (paymentId) => {
+    try {
+      const token = localStorage.getItem('accessToken')
+      const response = await fetch(`http://localhost:8080/api/billing/payments/${paymentId}/invoice`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!response.ok) throw new Error('Download failed')
+      const blob = await response.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href     = url
+      a.download = `invoice-${paymentId}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast('Failed to download invoice', 'error')
+    }
+  }
   const TABS = [
     { id: 'profile',  label: 'Profile',  icon: User },
     { id: 'security', label: 'Security', icon: Lock },
@@ -312,14 +330,15 @@ const [showPw, setShowPw] = useState({ current: false, new: false, confirm: fals
                         {p.status}
                       </span>
                       {p.status === 'SUCCESS' && (
-                        <a href={`/api/billing/payments/${p.id}/invoice`}
-                          target="_blank" rel="noreferrer"
-                          className="p-1.5 rounded hover:opacity-80 transition-opacity"
-                          style={{ color: 'var(--brand)' }}
-                          title="Download PDF invoice">
-                          <FileText className="w-4 h-4"/>
-                        </a>
-                      )}
+                          <button
+                            onClick={() => downloadInvoice(p.id)}
+                            className="p-1.5 rounded hover:opacity-80 transition-opacity"
+                            style={{ color: 'var(--brand)' }}
+                            title="Download PDF invoice">
+                            <FileText className="w-4 h-4"/>
+                          </button>
+                        )}
+                                              
                     </div>
                   </div>
                 ))}
