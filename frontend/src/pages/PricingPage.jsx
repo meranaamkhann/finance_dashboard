@@ -17,8 +17,14 @@ export default function PricingPage() {
 
   useEffect(() => {
     planApi.getPlans()
-      .then(r => setPlans(r.data.data))
-      .catch(() => toast('Failed to load plans', 'error'))
+      .then(r => {
+        const data = r.data?.data
+        setPlans(Array.isArray(data) ? data : [])
+      })
+      .catch(() => {
+        toast('Failed to load plans', 'error')
+        setPlans([])
+      })
       .finally(() => setLoading(false))
   }, [])
 

@@ -159,15 +159,20 @@ public class SecurityConfig {
     @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
 
     @Bean public CorsConfigurationSource corsSource() {
-        var cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("*"));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
-        cfg.setExposedHeaders(List.of("X-Rate-Limit-Remaining","Retry-After"));
-        cfg.setAllowCredentials(true);
-        cfg.setMaxAge(3600L);
-        var src = new UrlBasedCorsConfigurationSource();
-        src.registerCorsConfiguration("/**", cfg);
-        return src;
-    }
+    var cfg = new CorsConfiguration();
+    cfg.setAllowedOriginPatterns(List.of(
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://finance-pro-sibbus.vercel.app",
+        "https://*.vercel.app"
+    ));
+    cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+    cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
+    cfg.setExposedHeaders(List.of("X-Rate-Limit-Remaining","Retry-After"));
+    cfg.setAllowCredentials(true);
+    cfg.setMaxAge(3600L);
+    var src = new UrlBasedCorsConfigurationSource();
+    src.registerCorsConfiguration("/**", cfg);
+    return src;
+  }
 }

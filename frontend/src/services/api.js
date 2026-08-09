@@ -1,7 +1,11 @@
 import axios from 'axios'
 
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: BASE_URL,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -21,9 +25,9 @@ api.interceptors.response.use(
       const refresh = localStorage.getItem('refreshToken')
       if (refresh) {
         try {
-          const { data } = await axios.post('/api/auth/refresh', { refreshToken: refresh })
-          localStorage.setItem('accessToken',   data.data.accessToken)
-          localStorage.setItem('refreshToken',  data.data.refreshToken)
+          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken: refresh })
+          localStorage.setItem('accessToken',    data.data.accessToken)
+          localStorage.setItem('refreshToken',   data.data.refreshToken)
           localStorage.setItem('tokenExpiresAt', String(Date.now() + data.data.expiresIn * 1000))
           orig.headers.Authorization = `Bearer ${data.data.accessToken}`
           return api(orig)
@@ -123,8 +127,9 @@ export const planApi = {
 }
 
 export const downloadInvoice = async (paymentId) => {
+  const BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:8080'
   const token = localStorage.getItem('accessToken')
-  const res = await fetch(`http://localhost:8080/api/billing/payments/${paymentId}/invoice`, {
+  const res = await fetch(`${BACKEND}/api/billing/payments/${paymentId}/invoice`, {
     headers: { Authorization: `Bearer ${token}` }
   })
   if (!res.ok) throw new Error('Download failed')
