@@ -27,7 +27,7 @@ RUN mkdir -p /app/uploads && \
 
 USER finance
 
-ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=96m"
+ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m"
 
 EXPOSE 10000
 
