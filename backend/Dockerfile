@@ -27,11 +27,11 @@ RUN mkdir -p /app/uploads && \
 
 USER finance
 
-ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m"
+ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=192m"
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1
+  CMD wget -qO- "http://localhost:${PORT:-8080}/actuator/health" | grep -q UP || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
