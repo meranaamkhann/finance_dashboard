@@ -14,17 +14,19 @@ export default function PricingPage() {
   const { user }                = useAuth()
   const toast                   = useToast()
   const nav                     = useNavigate()
+  const [error, setError] = useState('')
 
   useEffect(() => {
     planApi.getPlans()
       .then(r => {
-        const data = r.data?.data
+        const data = r?.data?.data
         setPlans(Array.isArray(data) ? data : [])
       })
-      .catch(() => {
-        toast('Failed to load plans', 'error')
-        setPlans([])
-      })
+        .catch(e => {
+      console.error('Plans fetch failed:', e)
+      setError('Failed to load plans. Please try again.')
+      setPlans([])
+    })
       .finally(() => setLoading(false))
   }, [])
 
@@ -82,11 +84,23 @@ export default function PricingPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-page)' }}>
-      <Spinner size="lg"/>
+  <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ textAlign: 'center' }}>
+      <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-3"/>
+      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Loading plans…</p>
     </div>
-  )
-
+  </div>
+)
+  if (error) return (
+  <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ textAlign: 'center' }}>
+      <p style={{ color: '#ef4444', marginBottom: 16 }}>{error}</p>
+      <button onClick={() => window.location.reload()} className="btn-primary">
+        Try Again
+      </button>
+    </div>
+  </div>
+)
   return (
     <div className="min-h-screen py-16 px-4" style={{ background: 'var(--bg-page)' }}>
       <div className="max-w-5xl mx-auto">
@@ -113,7 +127,7 @@ export default function PricingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan, i) => {
+          {(plans || []).map((plan, i) => {
             const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice
             const isPro = plan.slug === 'pro'
             return (
