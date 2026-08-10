@@ -29,12 +29,30 @@ export default function PricingPage() {
     })
       .finally(() => setLoading(false))
   }, [])
+  
+  const loadRazorpay = () => {
+  return new Promise(resolve => {
+    if (window.Razorpay) { resolve(true); return }
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
 
   const checkout = async (plan) => {
     if (!user) { nav('/login'); return }
     if (plan.slug === 'free') {
       try {
         setPaying(plan.slug)
+
+        const loaded = await loadRazorpay()
+        if (!loaded) {
+          toast('Payment blocked by browser. Please disable ad blocker and try again.', 'error')
+          setPaying(null)
+          return
+        }
         await planApi.createOrder({ planSlug: 'free', billingCycle: 'MONTHLY' })
         toast('Free plan activated!', 'success')
         nav('/dashboard')

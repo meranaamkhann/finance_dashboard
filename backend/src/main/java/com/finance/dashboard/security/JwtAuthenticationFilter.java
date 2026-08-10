@@ -1,4 +1,5 @@
 package com.finance.dashboard.security;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,9 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
@@ -17,6 +18,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsService;
 
@@ -25,24 +27,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         try {
-            String token = parseJwt(request);
-            if (token != null && jwtUtils.validateToken(token)
-                    && "access".equals(jwtUtils.getTokenType(token))) {
-                var ud = userDetailsService.loadUserByUsername(
-                        jwtUtils.getUsernameFromToken(token));
-                var auth = new UsernamePasswordAuthenticationToken(
-                        ud, null, ud.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            String header = request.getHeader("Authorization");
+
+            if (header == null || !header.startsWith("Bearer ")) {
+                chain.doFilter(request, response);
+                return;
             }
+
+            String token = header.substring(7).trim();
+
+            if (token.isEmpty() || !jwtUtils.validateToken(token)) {
+                chain.doFilter(request, response);
+                return;
+            }
+
+            if (!"access".equals(jwtUtils.getTokenType(token))) {
+                chain.doFilter(request, response);
+                return;
+            }
+
+            String username = jwtUtils.getUsernameFromToken(token);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                try {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                } catch (Exception e) {
+                    log.warn("Could not load user '{}': {}", username, e.getMessage());
+                }
+            }
+
         } catch (Exception e) {
-            log.error("Cannot set authentication: {}", e.getMessage());
+            log.error("JWT filter error on {}: {}", request.getRequestURI(), e.getMessage());
         }
+
         chain.doFilter(request, response);
     }
 
-    private String parseJwt(HttpServletRequest req) {
-        String h = req.getHeader("Authorization");
-        return (StringUtils.hasText(h) && h.startsWith("Bearer ")) ? h.substring(7) : null;
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/")
+            || path.startsWith("/oauth2/")
+            || path.startsWith("/login/oauth2/")
+            || path.equals("/actuator/health")
+            || path.startsWith("/v3/api-docs")
+            || path.startsWith("/swagger-ui");
     }
 }

@@ -105,4 +105,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("An unexpected error occurred. Please try again later."));
     }
+
+    @ExceptionHandler(org.springframework.security.oauth2.core.OAuth2AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOAuth2Exception(
+            org.springframework.security.oauth2.core.OAuth2AuthenticationException ex) {
+        log.error("OAuth2 error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("OAuth2 login failed: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex,
+            jakarta.servlet.http.HttpServletRequest request) {
+        log.error("Unhandled error on {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("An unexpected error occurred. Please try again."));
+    }
 }
