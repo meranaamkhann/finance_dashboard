@@ -1,11 +1,13 @@
 import axios from 'axios'
 
-const BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-const BASE_URL = `${BACKEND}/api`
+const BACKEND = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
+const BASE_URL = BACKEND + '/api'
+
+console.log('[API] Backend URL:', BACKEND)
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -24,9 +26,7 @@ api.interceptors.response.use(
       const refresh = localStorage.getItem('refreshToken')
       if (refresh) {
         try {
-          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
-            refreshToken: refresh,
-          })
+          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken: refresh })
           localStorage.setItem('accessToken',    data.data.accessToken)
           localStorage.setItem('refreshToken',   data.data.refreshToken)
           localStorage.setItem('tokenExpiresAt', String(Date.now() + data.data.expiresIn * 1000))
@@ -60,12 +60,12 @@ export const authApi = {
 export const dashboardApi = {
   getSummary:       ()        => api.get('/dashboard/summary'),
   getSummaryRange:  (f, t)    => api.get('/dashboard/summary/range', { params: { from: f, to: t } }),
-  getCategories:    (f, t)    => api.get('/dashboard/categories', { params: { from: f, to: t } }),
-  getMonthlyTrend:  (m = 6)   => api.get('/dashboard/trends/monthly', { params: { months: m } }),
-  getWeeklyTrend:   (w = 12)  => api.get('/dashboard/trends/weekly',  { params: { weeks: w } }),
+  getCategories:    (f, t)    => api.get('/dashboard/categories',    { params: { from: f, to: t } }),
+  getMonthlyTrend:  (m = 6)   => api.get('/dashboard/trends/monthly',{ params: { months: m } }),
+  getWeeklyTrend:   (w = 12)  => api.get('/dashboard/trends/weekly', { params: { weeks: w } }),
   getHealthScore:   ()        => api.get('/dashboard/health-score'),
-  getSpendingByDay: (f, t)    => api.get('/dashboard/spending-by-day', { params: { from: f, to: t } }),
-  getTopExpenses:   (f, t, l) => api.get('/dashboard/top-expenses',   { params: { from: f, to: t, limit: l } }),
+  getSpendingByDay: (f, t)    => api.get('/dashboard/spending-by-day',{ params: { from: f, to: t } }),
+  getTopExpenses:   (f, t, l) => api.get('/dashboard/top-expenses',  { params: { from: f, to: t, limit: l } }),
 }
 
 export const recordsApi = {
@@ -111,8 +111,8 @@ export const usersApi = {
 }
 
 export const auditApi = {
-  getAll:     p        => api.get('/audit', { params: p }),
-  getByActor: (u, p)   => api.get(`/audit/by-actor/${u}`, { params: p }),
+  getAll:     p         => api.get('/audit', { params: p }),
+  getByActor: (u, p)    => api.get(`/audit/by-actor/${u}`, { params: p }),
   getByDate:  (f, t, p) => api.get('/audit/by-date-range', { params: { from: f, to: t, ...p } }),
 }
 
