@@ -1,8 +1,7 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api'
+const BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const BASE_URL = `${BACKEND}/api`
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -25,7 +24,9 @@ api.interceptors.response.use(
       const refresh = localStorage.getItem('refreshToken')
       if (refresh) {
         try {
-          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken: refresh })
+          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
+            refreshToken: refresh,
+          })
           localStorage.setItem('accessToken',    data.data.accessToken)
           localStorage.setItem('refreshToken',   data.data.refreshToken)
           localStorage.setItem('tokenExpiresAt', String(Date.now() + data.data.expiresIn * 1000))
@@ -64,7 +65,7 @@ export const dashboardApi = {
   getWeeklyTrend:   (w = 12)  => api.get('/dashboard/trends/weekly',  { params: { weeks: w } }),
   getHealthScore:   ()        => api.get('/dashboard/health-score'),
   getSpendingByDay: (f, t)    => api.get('/dashboard/spending-by-day', { params: { from: f, to: t } }),
-  getTopExpenses:   (f, t, l) => api.get('/dashboard/top-expenses', { params: { from: f, to: t, limit: l } }),
+  getTopExpenses:   (f, t, l) => api.get('/dashboard/top-expenses',   { params: { from: f, to: t, limit: l } }),
 }
 
 export const recordsApi = {
@@ -110,27 +111,26 @@ export const usersApi = {
 }
 
 export const auditApi = {
-  getAll:    p         => api.get('/audit', { params: p }),
-  getByActor:(u, p)    => api.get(`/audit/by-actor/${u}`, { params: p }),
-  getByDate: (f, t, p) => api.get('/audit/by-date-range', { params: { from: f, to: t, ...p } }),
+  getAll:     p        => api.get('/audit', { params: p }),
+  getByActor: (u, p)   => api.get(`/audit/by-actor/${u}`, { params: p }),
+  getByDate:  (f, t, p) => api.get('/audit/by-date-range', { params: { from: f, to: t, ...p } }),
 }
 
 export const planApi = {
-  getPlans:        ()      => api.get('/plans'),
-  getPlan:         slug    => api.get(`/plans/${slug}`),
-  createOrder:     d       => api.post('/billing/orders', d),
-  verifyPayment:   d       => api.post('/billing/verify', d),
-  getSubscription: ()      => api.get('/billing/subscription'),
-  getHistory:      ()      => api.get('/billing/subscriptions'),
-  getPayments:     p       => api.get('/billing/payments', { params: p }),
-  cancelSub:       reason  => api.post(`/billing/cancel?reason=${encodeURIComponent(reason || '')}`),
+  getPlans:        ()     => api.get('/plans'),
+  getPlan:         slug   => api.get(`/plans/${slug}`),
+  createOrder:     d      => api.post('/billing/orders', d),
+  verifyPayment:   d      => api.post('/billing/verify', d),
+  getSubscription: ()     => api.get('/billing/subscription'),
+  getHistory:      ()     => api.get('/billing/subscriptions'),
+  getPayments:     p      => api.get('/billing/payments', { params: p }),
+  cancelSub:       reason => api.post(`/billing/cancel?reason=${encodeURIComponent(reason || '')}`),
 }
 
 export const downloadInvoice = async (paymentId) => {
-  const BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:8080'
   const token = localStorage.getItem('accessToken')
   const res = await fetch(`${BACKEND}/api/billing/payments/${paymentId}/invoice`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) throw new Error('Download failed')
   const blob = await res.blob()

@@ -267,7 +267,7 @@ export default function LoginPage() {
           {/* Google Login — CENTERED */}
           <div className="w-full flex justify-center">
             <a
-              href="http://localhost:8080/oauth2/authorization/google"
+             href={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`}
               className="btn-secondary w-full max-w-[200px] justify-center gap-2 py-2.5 no-underline"
             >
               <svg
