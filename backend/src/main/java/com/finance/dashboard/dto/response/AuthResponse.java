@@ -12,4 +12,7 @@ public class AuthResponse {
     private String username;
     private String fullName;
     private Role   role;
+    private boolean onTrial;
+    private java.time.LocalDateTime trialEndsAt;
+    private int trialDaysLeft;
 }

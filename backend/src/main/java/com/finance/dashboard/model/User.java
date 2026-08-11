@@ -39,6 +39,12 @@ public class User {
     private boolean emailVerified = false;
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;
+    @Column(name = "trial_ends_at")
+    private LocalDateTime trialEndsAt;
+
+    @Column(name = "is_on_trial", nullable = false)
+    @Builder.Default
+    private boolean onTrial = false;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp private LocalDateTime updatedAt;
 

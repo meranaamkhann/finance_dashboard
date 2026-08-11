@@ -13,6 +13,9 @@ import com.finance.dashboard.model.enums.AuditAction;
 import com.finance.dashboard.model.enums.Role;
 import com.finance.dashboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,7 +39,10 @@ public class UserService {
                 .email(req.getEmail().toLowerCase().trim())
                 .fullName(req.getFullName().trim())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .role(req.getRole()).build();
+                .role(Role.ADMIN)
+                .onTrial(true)
+                .trialEndsAt(LocalDateTime.now().plusDays(14))
+                .build();
         userRepository.save(user);
         auditService.log(AuditAction.USER_CREATED, actor, "User", user.getId(),
                 null, json(user), ip, "Created: " + user.getUsername());

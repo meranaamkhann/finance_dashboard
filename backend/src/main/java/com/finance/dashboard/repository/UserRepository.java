@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.deleted = false AND u.active = true")
     long countActiveUsers();
+
+    @Query("SELECT u FROM User u WHERE u.onTrial = true AND u.trialEndsAt < :now AND u.deleted = false")
+    java.util.List<User> findExpiredTrials(@org.springframework.data.repository.query.Param("now") java.time.LocalDateTime now);
 }

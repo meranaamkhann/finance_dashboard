@@ -33,90 +33,33 @@ public class OAuth2AuthenticationSuccessHandler
     @Value("${app.frontend.url:https://finance-pro-sibbus.vercel.app}")
     private String frontendUrl;
 
-        @Override
-        public void onAuthenticationSuccess(
-                HttpServletRequest request,
-                HttpServletResponse response,
-                Authentication authentication)
-                throws IOException, ServletException {
+@Override
+public void onAuthenticationSuccess(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    Authentication auth) throws IOException {
+    try {
+        OAuth2UserPrincipal principal = (OAuth2UserPrincipal) auth.getPrincipal();
+        User user = principal.getUser();
+
+        String role        = "ROLE_" + user.getRole().name();
+        String accessToken = jwtUtils.generateAccessToken(user.getUsername(), role);
+        String rawRefresh  = jwtUtils.generateRefreshToken(user.getUsername());
 
         try {
-                OAuth2UserPrincipal principal =
-                        (OAuth2UserPrincipal) authentication.getPrincipal();
-
-                User user = principal.getUser();
-
-                if (user == null) {
-                throw new IllegalStateException(
-                        "OAuth2 authenticated principal contains no user"
-                );
-                }
-
-                if (!user.isActive() || user.isDeleted()) {
-                log.warn(
-                        "OAuth2 login rejected for inactive/deleted user: {}",
-                        user.getUsername()
-                );
-
-                response.sendRedirect(
-                        frontendUrl + "/login?error=account_disabled"
-                );
-                return;
-                }
-
-                String role = user.getRole().name();
-
-                String accessToken =
-                        jwtUtils.generateAccessToken(
-                                user.getUsername(),
-                                role
-                        );
-
-                String rawRefreshToken =
-                        jwtUtils.generateRefreshToken(
-                                user.getUsername()
-                        );
-
-                try {
-                refreshTokenService.create(user, rawRefreshToken);
-                } catch (Exception e) {
-                log.warn(
-                        "Could not store refresh token: {}",
-                        e.getMessage()
-                );
-                }
-
-                String redirectUrl =
-                        frontendUrl
-                                + "/oauth2/callback"
-                                + "?accessToken="
-                                + URLEncoder.encode(
-                                        accessToken,
-                                        StandardCharsets.UTF_8
-                                )
-                                + "&refreshToken="
-                                + URLEncoder.encode(
-                                        rawRefreshToken,
-                                        StandardCharsets.UTF_8
-                                );
-
-                log.info(
-                        "OAuth2 login successful for user: {}",
-                        user.getUsername()
-                );
-
-                response.sendRedirect(redirectUrl);
-
+            refreshTokenService.create(user, rawRefresh);
         } catch (Exception e) {
-
-                log.error(
-                        "OAuth2 success handler failed",
-                        e
-                );
-
-                response.sendRedirect(
-                        frontendUrl + "/login?error=oauth2_failed"
-                );
+            log.warn("Refresh token store failed: {}", e.getMessage());
         }
-        }
+
+        String redirectUrl = frontendUrl + "/oauth2/callback"
+                + "?token="   + accessToken
+                + "&refresh=" + rawRefresh;
+
+        response.sendRedirect(redirectUrl);
+
+    } catch (Exception e) {
+        log.error("OAuth2 success handler error: {}", e.getMessage(), e);
+        response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
+    }
+}
 }

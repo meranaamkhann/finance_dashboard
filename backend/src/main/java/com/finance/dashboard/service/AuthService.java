@@ -126,10 +126,23 @@ public class AuthService {
     }
 
     private AuthResponse buildResponse(User user, String accessToken, String refreshToken) {
-        return AuthResponse.builder()
-                .accessToken(accessToken).refreshToken(refreshToken)
-                .tokenType("Bearer").expiresIn(jwtExpirationMs / 1000)
-                .username(user.getUsername()).fullName(user.getFullName()).role(user.getRole())
-                .build();
+    int daysLeft = 0;
+    if (user.isOnTrial() && user.getTrialEndsAt() != null) {
+        daysLeft = (int) java.time.temporal.ChronoUnit.DAYS.between(
+                LocalDateTime.now(), user.getTrialEndsAt());
+        daysLeft = Math.max(0, daysLeft);
     }
+    return AuthResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .tokenType("Bearer")
+            .expiresIn(jwtExpirationMs / 1000)
+            .username(user.getUsername())
+            .fullName(user.getFullName())
+            .role(user.getRole())
+            .onTrial(user.isOnTrial())
+            .trialEndsAt(user.getTrialEndsAt())
+            .trialDaysLeft(daysLeft)
+            .build();
+        }   
 }

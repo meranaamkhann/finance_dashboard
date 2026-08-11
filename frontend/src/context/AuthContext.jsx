@@ -59,6 +59,12 @@ export function AuthProvider({ children }) {
       }
 
       const { data } = await usersApi.getMe()
+        const u = data.data
+        setUser({
+          ...u,
+          onTrial:       u.onTrial       ?? false,
+          trialDaysLeft: u.trialDaysLeft ?? 0,
+        })
       setUser(data.data)
       const exAt = localStorage.getItem('tokenExpiresAt')
       if (exAt) {
@@ -79,14 +85,14 @@ export function AuthProvider({ children }) {
   const login = async (creds) => {
     const { data } = await authApi.login(creds)
     storeTokens(data.data)
-    setUser({ username: data.data.username, fullName: data.data.fullName, role: data.data.role })
+    setUser({ username: data.data.username, fullName: data.data.fullName, role: data.data.role, trialDaysLeft: data.data.trialDaysLeft, onTrial: data.data.onTrial })
     return data.data
   }
 
   const loginByEmail = async (creds) => {
     const { data } = await authApi.loginByEmail(creds)
     storeTokens(data.data)
-    setUser({ username: data.data.username, fullName: data.data.fullName, role: data.data.role })
+    setUser({ username: data.data.username, fullName: data.data.fullName, role: data.data.role, trialDaysLeft: data.data.trialDaysLeft, onTrial: data.data.onTrial })
     return data.data
   }
 

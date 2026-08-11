@@ -32,6 +32,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HexFormat;
 import java.util.Map;
+import com.finance.dashboard.model.enums.Role;
+import com.finance.dashboard.repository.UserRepository;
 
 @Slf4j
 @Service
@@ -42,6 +44,7 @@ public class PaymentService {
     private final PlanService           planService;
     private final SubscriptionService   subscriptionService;
     private final SecurityUtils         securityUtils;
+    private final UserRepository        userRepository;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -124,6 +127,17 @@ public class PaymentService {
         BillingCycle cycle = BillingCycle.valueOf(payment.getBillingCycle());
         Subscription sub   = subscriptionService.activate(payment.getUser(), payment.getPlan(), cycle);
 
+        User payingUser = payment.getUser();
+        Plan paidPlan   = payment.getPlan();
+
+        if (!paidPlan.getSlug().equals("free")) {
+            payingUser.setRole(Role.ADMIN);
+            payingUser.setOnTrial(false);
+            userRepository.save(payingUser);
+            log.info("User {} upgraded to ADMIN after payment for plan: {}",
+                    payingUser.getUsername(), paidPlan.getName());
+        }
+
         payment.setRazorpayPaymentId(req.getRazorpayPaymentId());
         payment.setRazorpaySignature(req.getRazorpaySignature());
         payment.setStatus(PaymentStatus.SUCCESS);
@@ -147,8 +161,8 @@ public class PaymentService {
 
     private boolean verifySignature(String orderId, String paymentId, String signature) {
         if (razorpaySecret == null || razorpaySecret.isBlank()) {
-            log.warn("Razorpay secret not set — skipping verification");
-            return true;
+            log.error("RAZORPAY SECRET NOT SET — rejecting payment");
+            return false;
         }
         try {
             String payload  = orderId + "|" + paymentId;
@@ -157,7 +171,9 @@ public class PaymentService {
                     razorpaySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             String computed = HexFormat.of().formatHex(
                     mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
-            return computed.equals(signature);
+            boolean valid = computed.equals(signature);
+            if (!valid) log.warn("Payment signature mismatch for order: {}", orderId);
+            return valid;
         } catch (Exception e) {
             log.error("Signature verification error: {}", e.getMessage());
             return false;

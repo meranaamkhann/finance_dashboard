@@ -33,41 +33,33 @@ export default function RegisterPage() {
   const sLabel = ['Too weak','Weak','Fair','Good','Strong'][s]
   const sColor = ['bg-red-500','bg-orange-400','bg-yellow-400','bg-blue-400','bg-green-500'][s]
 
-  const submit = async e => {
-    e.preventDefault()
-    setError('')
+const submit = async e => {
+e.preventDefault()
+setError('')
 
-    if (form.password !== form.confirm) {
-      setError('Passwords do not match')
-      return
-    }
-    if (s < 3) {
-      setError('Password is too weak')
-      return
-    }
+if (form.password !== form.confirm) { setError('Passwords do not match'); return }
+if (s < 3) { setError('Password is too weak'); return }
 
-    setLoading(true)
-    try {
-      const { data } = await api.post('/auth/register', {
-        username: form.username,
-        email:    form.email,
-        fullName: form.fullName,
-        password: form.password,
-      })
-      localStorage.setItem('accessToken',    data.data.accessToken)
-      localStorage.setItem('refreshToken',   data.data.refreshToken)
-      localStorage.setItem('tokenExpiresAt', String(Date.now() + data.data.expiresIn * 1000))
-      toast('Account created! Welcome to FinancePro', 'success')
-      nav('/dashboard')
-    } catch (err) {
-      const msg = err.response?.data?.message
-            || Object.values(err.response?.data?.errors || {}).join(', ')
-            || 'Registration failed'
-      setError(msg)
-    } finally {
-      setLoading(false)
-    }
-  }
+setLoading(true)
+try {
+    const { data } = await api.post('/auth/register', {
+    username: form.username,
+    email:    form.email,
+    fullName: form.fullName,
+    password: form.password,
+    })
+    localStorage.setItem('accessToken',    data.data.accessToken)
+    localStorage.setItem('refreshToken',   data.data.refreshToken)
+    localStorage.setItem('tokenExpiresAt', String(Date.now() + data.data.expiresIn * 1000))
+    window.location.href = '/dashboard'
+} catch (err) {
+    const errors = err.response?.data?.errors
+    const msg = errors
+    ? Object.values(errors).join(', ')
+    : err.response?.data?.message || 'Registration failed'
+    setError(msg)
+} finally { setLoading(false) }
+}
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4"
