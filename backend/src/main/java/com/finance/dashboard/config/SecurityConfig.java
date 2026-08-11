@@ -55,16 +55,20 @@ public class SecurityConfig {
 
     @Value("${app.frontend.url:https://finance-pro-sibbus.vercel.app}")
     private String frontendUrl;
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(c -> c.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex -> ex.authenticationEntryPoint(jsonEntryPoint()))
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jsonEntryPoint())
+            )
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
                 auth.requestMatchers(
                     "/api/auth/**",
                     "/api/plans/**",
@@ -75,37 +79,89 @@ public class SecurityConfig {
                     "/login/oauth2/**",
                     "/oauth2/**"
                 ).permitAll();
-                if ("dev".equalsIgnoreCase(profile))
+
+                if ("dev".equalsIgnoreCase(profile)) {
                     auth.requestMatchers("/h2-console/**").permitAll();
+                }
+
                 auth.requestMatchers("/actuator/**").hasRole("ADMIN");
-                auth.requestMatchers("/api/users/me", "/api/users/me/**").authenticated();
+
+                auth.requestMatchers(
+                    "/api/users/me",
+                    "/api/users/me/**"
+                ).authenticated();
+
                 auth.requestMatchers("/api/users/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/audit/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.POST,   "/api/records").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.PUT,    "/api/records/**").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.DELETE, "/api/records/**").hasRole("ADMIN");
+
                 auth.requestMatchers(
-                    "/api/records/export/**", "/api/budgets/**",
-                    "/api/recurring/**", "/api/dashboard/categories",
-                    "/api/dashboard/trends/**", "/api/dashboard/health-score",
-                    "/api/dashboard/top-expenses", "/api/dashboard/spending-by-day",
+                    HttpMethod.POST,
+                    "/api/records"
+                ).hasRole("ADMIN");
+
+                auth.requestMatchers(
+                    HttpMethod.PUT,
+                    "/api/records/**"
+                ).hasRole("ADMIN");
+
+                auth.requestMatchers(
+                    HttpMethod.DELETE,
+                    "/api/records/**"
+                ).hasRole("ADMIN");
+
+                auth.requestMatchers(
+                    "/api/records/export/**",
+                    "/api/budgets/**",
+                    "/api/recurring/**",
+                    "/api/dashboard/categories",
+                    "/api/dashboard/trends/**",
+                    "/api/dashboard/health-score",
+                    "/api/dashboard/top-expenses",
+                    "/api/dashboard/spending-by-day",
                     "/api/dashboard/summary/range"
                 ).hasAnyRole("ANALYST", "ADMIN");
+
                 auth.anyRequest().authenticated();
             })
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
+            .headers(h -> {
+                if ("dev".equalsIgnoreCase(profile)) {
+                    h.frameOptions(f -> f.sameOrigin());
+                } else {
+                    h.frameOptions(f -> f.deny());
+                    h.contentSecurityPolicy(c -> c.policyDirectives(
+                        "default-src 'self'; frame-ancestors 'none'"
+                    ));
+                }
+
+                h.referrerPolicy(r -> r.policy(
+                    org.springframework.security.web.header.writers
+                        .ReferrerPolicyHeaderWriter.ReferrerPolicy
+                        .STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+                ));
+            })
+            .authenticationProvider(authProvider())
+            .addFilterBefore(
+                rateLimitFilter,
+                UsernamePasswordAuthenticationFilter.class
+            )
+            .addFilterBefore(
+                jwtFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
+
+        // IMPORTANT:
+        // Only configure OAuth2 when explicitly enabled.
+        if (oauth2Enabled) {
+            http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(ui -> ui
+                    .userService(oAuth2UserService)
+                )
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2FailureHandler)
-            )
-            .headers(h -> h.frameOptions(f -> {
-                if ("dev".equalsIgnoreCase(profile)) f.sameOrigin();
-                else f.deny();
-            }))
-            .authenticationProvider(authProvider())
-            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtFilter,       UsernamePasswordAuthenticationFilter.class);
+            );
+        }
+
         return http.build();
     }
 
