@@ -31,28 +31,34 @@ export default function PricingPage() {
   }, [])
   
   const loadRazorpay = () => {
-  return new Promise(resolve => {
-    if (window.Razorpay) { resolve(true); return }
-    const script = document.createElement('script')
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-    script.onload = () => resolve(true)
-    script.onerror = () => resolve(false)
-    document.body.appendChild(script)
-  })
-}
+    return new Promise(resolve => {
+      if (window.Razorpay) {
+        resolve(true)
+        return
+      }
+
+      const existing = document.getElementById('razorpay-checkout-script')
+      if (existing) {
+        existing.addEventListener('load', () => resolve(!!window.Razorpay), { once: true })
+        existing.addEventListener('error', () => resolve(false), { once: true })
+        return
+      }
+
+      const script = document.createElement('script')
+      script.id = 'razorpay-checkout-script'
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.async = true
+      script.onload = () => resolve(!!window.Razorpay)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
 
   const checkout = async (plan) => {
     if (!user) { nav('/login'); return }
     if (plan.slug === 'free') {
       try {
         setPaying(plan.slug)
-
-        const loaded = await loadRazorpay()
-        if (!loaded) {
-          toast('Payment blocked by browser. Please disable ad blocker and try again.', 'error')
-          setPaying(null)
-          return
-        }
         await planApi.createOrder({ planSlug: 'free', billingCycle: 'MONTHLY' })
         toast('Free plan activated!', 'success')
         nav('/dashboard')
@@ -64,6 +70,16 @@ export default function PricingPage() {
 
     try {
       setPaying(plan.slug)
+
+      // Razorpay's checkout SDK is loaded lazily because the static script
+      // in index.html was being blocked by browser privacy/ad-blocking.
+      const loaded = await loadRazorpay()
+      if (!loaded) {
+        toast('Razorpay checkout was blocked by the browser. Disable Shields/ad-blocking for localhost:5173 and try again.', 'error')
+        setPaying(null)
+        return
+      }
+
       const { data } = await planApi.createOrder({
         planSlug: plan.slug,
         billingCycle: billing === 'yearly' ? 'YEARLY' : 'MONTHLY'
