@@ -24,19 +24,21 @@ public class User {
     @Column(nullable = false) @Builder.Default             private boolean deleted = false;
     @Column(nullable = false) @Builder.Default             private int failedLoginAttempts = 0;
     private LocalDateTime lockedUntil;
-    private LocalDateTime passwordChangedAt;
+    // private LocalDateTime passwordChangedAt;
     @Column(length = 50)
     private String provider;
 
-    @Column(length = 200)
+    @Column(name = "provider_id", length = 200)
     private String providerId;
 
-    @Column(length = 500)
+    @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
-    @Column(nullable = false)
+    @Column(name = "email_verified", nullable = false)
     @Builder.Default
     private boolean emailVerified = false;
+    @Column(name = "password_changed_at")
+    private LocalDateTime passwordChangedAt;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp private LocalDateTime updatedAt;
 
