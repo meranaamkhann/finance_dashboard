@@ -20,6 +20,7 @@ import UsersPage          from './pages/UsersPage'
 import AuditPage          from './pages/AuditPage'
 import ProfilePage        from './pages/ProfilePage'
 import PricingPage        from './pages/PricingPage'
+import RegisterPage from './pages/RegisterPage'
 
 function Spinner404() {
   return (
@@ -101,6 +102,7 @@ function AppRoutes() {
       }/>
 
       <Route path="*" element={<Spinner404/>}/>
+      <Route path="/register" element={user ? <Navigate to="/dashboard" replace/> : <RegisterPage/>}/>
     </Routes>
   )
 }

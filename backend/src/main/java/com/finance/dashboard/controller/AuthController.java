@@ -1,4 +1,5 @@
 package com.finance.dashboard.controller;
+import com.finance.dashboard.dto.request.CreateUserRequest;
 import com.finance.dashboard.dto.request.ForgotPasswordRequest;
 import com.finance.dashboard.dto.request.LoginByEmailRequest;
 import com.finance.dashboard.dto.request.LoginRequest;
@@ -7,6 +8,7 @@ import com.finance.dashboard.dto.request.RefreshTokenRequest;
 import com.finance.dashboard.dto.request.ResetPasswordRequest;
 import com.finance.dashboard.dto.response.ApiResponse;
 import com.finance.dashboard.dto.response.AuthResponse;
+import com.finance.dashboard.dto.response.UserResponse;
 import com.finance.dashboard.service.AuthService;
 import com.finance.dashboard.service.PasswordResetService;
 import com.finance.dashboard.util.IpUtils;
@@ -16,6 +18,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +33,20 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
     private final SecurityUtils securityUtils;
+    
+    @PostMapping("/register")
+    @Operation(summary = "Register a new user account")
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
+            @Valid @RequestBody CreateUserRequest req,
+            HttpServletRequest http) {
+        UserResponse created = userService.create(req, "SELF_REGISTER", IpUtils.resolveIp(http));
+        LoginRequest loginReq = new LoginRequest();
+        loginReq.setUsername(req.getUsername());
+        loginReq.setPassword(req.getPassword());
+        AuthResponse auth = authService.login(loginReq, IpUtils.resolveIp(http));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Account created successfully", auth));
+    }
 
     @PostMapping("/login")
     @Operation(summary = "Login with username and password")

@@ -344,6 +344,17 @@ export default function LoginPage() {
               </button>
             ))}
           </div>
+
+          <div className="mt-4 pt-4 border-t text-center" style={{ borderColor: 'var(--border)' }}>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              Don't have an account?{' '}
+              <Link to="/register"
+                className="font-medium hover:underline"
+                style={{ color: 'var(--brand)' }}>
+                Create one
+              </Link>
+            </p>
+          </div>
         </div>
 
         {/* Terms */}
