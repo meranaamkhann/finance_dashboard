@@ -2,6 +2,8 @@ package com.finance.dashboard.security;
 
 import com.finance.dashboard.model.User;
 import com.finance.dashboard.repository.UserRepository;
+import com.finance.dashboard.service.RefreshTokenService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,55 +28,31 @@ public class OAuth2AuthenticationSuccessHandler
 
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${app.frontend.url:https://finance-pro-sibbus.vercel.app}")
     private String frontendUrl;
 
-    @Override
-    public void onAuthenticationSuccess(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication)
-            throws IOException, ServletException {
+        @Override
+        public void onAuthenticationSuccess(
+                HttpServletRequest request,
+                HttpServletResponse response,
+                Authentication authentication)
+                throws IOException, ServletException {
 
         try {
-            User user = null;
+                OAuth2UserPrincipal principal =
+                        (OAuth2UserPrincipal) authentication.getPrincipal();
 
-            Object principal = authentication.getPrincipal();
+                User user = principal.getUser();
 
-            /*
-             * CustomOAuth2UserService returns OAuth2UserPrincipal
-             * containing the actual database User.
-             */
-            if (principal instanceof OAuth2UserPrincipal oauthPrincipal) {
-                user = oauthPrincipal.getUser();
-            }
-
-            /*
-             * Fallback: resolve the user from Google's email.
-             */
-            if (user == null && principal instanceof OAuth2User oauth2User) {
-                String email = oauth2User.getAttribute("email");
-
-                if (email != null && !email.isBlank()) {
-                    email = email.toLowerCase().trim();
-
-                    user = userRepository
-                            .findByEmailAndDeletedFalse(email)
-                            .orElse(null);
-                }
-            }
-
-            if (user == null) {
-                log.error("OAuth2 user could not be resolved from authenticated principal");
-
-                response.sendRedirect(
-                        frontendUrl + "/login?error=oauth2_user_not_found"
+                if (user == null) {
+                throw new IllegalStateException(
+                        "OAuth2 authenticated principal contains no user"
                 );
-                return;
-            }
+                }
 
-            if (!user.isActive() || user.isDeleted()) {
+                if (!user.isActive() || user.isDeleted()) {
                 log.warn(
                         "OAuth2 login rejected for inactive/deleted user: {}",
                         user.getUsername()
@@ -84,58 +62,61 @@ public class OAuth2AuthenticationSuccessHandler
                         frontendUrl + "/login?error=account_disabled"
                 );
                 return;
-            }
+                }
 
-            String role = user.getRole().name();
+                String role = user.getRole().name();
 
-            String accessToken =
-                    jwtUtils.generateAccessToken(
-                            user.getUsername(),
-                            role
-                    );
+                String accessToken =
+                        jwtUtils.generateAccessToken(
+                                user.getUsername(),
+                                role
+                        );
 
-            String refreshToken =
-                    jwtUtils.generateRefreshToken(
-                            user.getUsername()
-                    );
+                String rawRefreshToken =
+                        jwtUtils.generateRefreshToken(
+                                user.getUsername()
+                        );
 
-            String redirectUrl =
-                    frontendUrl
-                            + "/oauth2/callback"
-                            + "?accessToken="
-                            + URLEncoder.encode(
-                                    accessToken,
-                                    StandardCharsets.UTF_8
-                            )
-                            + "&refreshToken="
-                            + URLEncoder.encode(
-                                    refreshToken,
-                                    StandardCharsets.UTF_8
-                            )
-                            + "&username="
-                            + URLEncoder.encode(
-                                    user.getUsername(),
-                                    StandardCharsets.UTF_8
-                            )
-                            + "&role="
-                            + URLEncoder.encode(
-                                    role,
-                                    StandardCharsets.UTF_8
-                            );
+                try {
+                refreshTokenService.create(user, rawRefreshToken);
+                } catch (Exception e) {
+                log.warn(
+                        "Could not store refresh token: {}",
+                        e.getMessage()
+                );
+                }
 
-            log.info(
-                    "OAuth2 login successful for user: {}",
-                    user.getUsername()
-            );
+                String redirectUrl =
+                        frontendUrl
+                                + "/oauth2/callback"
+                                + "?accessToken="
+                                + URLEncoder.encode(
+                                        accessToken,
+                                        StandardCharsets.UTF_8
+                                )
+                                + "&refreshToken="
+                                + URLEncoder.encode(
+                                        rawRefreshToken,
+                                        StandardCharsets.UTF_8
+                                );
 
-            response.sendRedirect(redirectUrl);
+                log.info(
+                        "OAuth2 login successful for user: {}",
+                        user.getUsername()
+                );
+
+                response.sendRedirect(redirectUrl);
 
         } catch (Exception e) {
-            log.error("OAuth2 success handler failed", e);
 
-            response.sendRedirect(
-                    frontendUrl + "/login?error=oauth2_login_failed"
-            );
+                log.error(
+                        "OAuth2 success handler failed",
+                        e
+                );
+
+                response.sendRedirect(
+                        frontendUrl + "/login?error=oauth2_failed"
+                );
         }
-    }
+        }
 }
