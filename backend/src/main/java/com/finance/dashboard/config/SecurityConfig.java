@@ -27,11 +27,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,25 +50,20 @@ public class SecurityConfig {
     private final OAuth2AuthenticationFailureHandler oAuth2FailureHandler;
     private final ObjectMapper objectMapper;
 
-    @Value("${spring.profiles.active:dev}")
-    private String profile;
-
-    @Value("${app.frontend.url:https://finance-pro-sibbus.vercel.app}")
-    private String frontendUrl;
+    @Value("${spring.profiles.active:dev}") private String profile;
+    @Value("${app.oauth2.enabled:false}")
+    private boolean oauth2Enabled;
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .cors(c -> c.configurationSource(corsConfigurationSource()))
+            .cors(c -> c.configurationSource(corsSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(jsonEntryPoint())
+                .authenticationEntryPoint(jsonAuthenticationEntryPoint())
             )
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-
                 auth.requestMatchers(
                     "/api/auth/**",
                     "/api/plans/**",
@@ -80,35 +75,20 @@ public class SecurityConfig {
                     "/oauth2/**"
                 ).permitAll();
 
-                if ("dev".equalsIgnoreCase(profile)) {
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
+                if ("dev".equalsIgnoreCase(profile))
                     auth.requestMatchers("/h2-console/**").permitAll();
-                }
 
                 auth.requestMatchers("/actuator/**").hasRole("ADMIN");
-
-                auth.requestMatchers(
-                    "/api/users/me",
-                    "/api/users/me/**"
-                ).authenticated();
-
+                auth.requestMatchers("/api/users/me", "/api/users/me/**").authenticated();
                 auth.requestMatchers("/api/users/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/audit/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
 
-                auth.requestMatchers(
-                    HttpMethod.POST,
-                    "/api/records"
-                ).hasRole("ADMIN");
-
-                auth.requestMatchers(
-                    HttpMethod.PUT,
-                    "/api/records/**"
-                ).hasRole("ADMIN");
-
-                auth.requestMatchers(
-                    HttpMethod.DELETE,
-                    "/api/records/**"
-                ).hasRole("ADMIN");
+                auth.requestMatchers(HttpMethod.POST, "/api/records").hasRole("ADMIN");
+                auth.requestMatchers(HttpMethod.PUT, "/api/records/**").hasRole("ADMIN");
+                auth.requestMatchers(HttpMethod.DELETE, "/api/records/**").hasRole("ADMIN");
 
                 auth.requestMatchers(
                     "/api/records/export/**",
@@ -135,28 +115,17 @@ public class SecurityConfig {
                 }
 
                 h.referrerPolicy(r -> r.policy(
-                    org.springframework.security.web.header.writers
-                        .ReferrerPolicyHeaderWriter.ReferrerPolicy
-                        .STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+                    ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN
                 ));
             })
             .authenticationProvider(authProvider())
-            .addFilterBefore(
-                rateLimitFilter,
-                UsernamePasswordAuthenticationFilter.class
-            )
-            .addFilterBefore(
-                jwtFilter,
-                UsernamePasswordAuthenticationFilter.class
-            );
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // IMPORTANT:
-        // Only configure OAuth2 when explicitly enabled.
+        // OAuth2 is enabled only when explicitly configured.
         if (oauth2Enabled) {
             http.oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(ui -> ui
-                    .userService(oAuth2UserService)
-                )
+                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2FailureHandler)
             );
@@ -166,39 +135,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            frontendUrl,
-            "https://*.vercel.app"
-        ));
-        config.setAllowedMethods(Arrays.asList(
-            "GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD"
-        ));
-        config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(Arrays.asList(
-            "X-Rate-Limit-Remaining","Retry-After","Authorization"
-        ));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
-
-    @Bean
-    public AuthenticationEntryPoint jsonEntryPoint() {
+    public AuthenticationEntryPoint jsonAuthenticationEntryPoint() {
         return (request, response, ex) -> {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setHeader("Access-Control-Allow-Origin",
-                request.getHeader("Origin") != null ? request.getHeader("Origin") : "*");
-            response.setHeader("Access-Control-Allow-Credentials", "true");
             Map<String, Object> body = new LinkedHashMap<>();
-            body.put("success",   false);
-            body.put("message",   "Authentication required.");
+            body.put("success", false);
+            body.put("message", "Authentication required. Please log in.");
             body.put("timestamp", LocalDateTime.now().toString());
             response.getWriter().write(objectMapper.writeValueAsString(body));
         };
@@ -214,4 +157,29 @@ public class SecurityConfig {
         return c.getAuthenticationManager();
     }
     @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
+
+    @Bean
+    public CorsConfigurationSource corsSource() {
+        var cfg = new CorsConfiguration();
+        cfg.setAllowedOriginPatterns(List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://finance-pro-sibbus.vercel.app",
+            "https://*.vercel.app"
+        ));
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin"
+        ));
+        cfg.setExposedHeaders(List.of("X-Rate-Limit-Remaining", "Retry-After"));
+        cfg.setAllowCredentials(true);
+        cfg.setMaxAge(3600L);
+        var src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", cfg);
+        return src;
+    }
 }
