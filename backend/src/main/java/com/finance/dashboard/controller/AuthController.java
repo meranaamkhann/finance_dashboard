@@ -11,6 +11,7 @@ import com.finance.dashboard.dto.response.AuthResponse;
 import com.finance.dashboard.dto.response.UserResponse;
 import com.finance.dashboard.service.AuthService;
 import com.finance.dashboard.service.PasswordResetService;
+import com.finance.dashboard.service.UserService;
 import com.finance.dashboard.util.IpUtils;
 import com.finance.dashboard.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +34,7 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
     private final SecurityUtils securityUtils;
+    private final UserService userService;
     
     @PostMapping("/register")
     @Operation(summary = "Register a new user account")
