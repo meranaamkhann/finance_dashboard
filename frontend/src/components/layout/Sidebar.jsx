@@ -13,7 +13,7 @@ const NAV = [
   { to: '/budgets',       icon: PiggyBank,       label: 'Budgets',     roles: ['ANALYST','ADMIN'] },
   { to: '/recurring',     icon: RefreshCw,       label: 'Recurring',   roles: ['ANALYST','ADMIN'] },
   { to: '/analytics',     icon: BarChart2,       label: 'Analytics',   roles: ['ANALYST','ADMIN'] },
-  { to: '/users',         icon: Users,           label: 'Users',       roles: ['ADMIN'] },
+  { to: '/users',         icon: Users,           label: 'Members',       roles: ['ANALYST','ADMIN'] },
   { to: '/audit',         icon: ClipboardList,   label: 'Audit',       roles: ['ADMIN'] },
 ]
 

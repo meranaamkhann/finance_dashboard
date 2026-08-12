@@ -26,6 +26,7 @@ public class RecurringTransaction {
     private LocalDate nextExecutionDate;
     private LocalDate lastExecutedDate;
     @Column(nullable = false) @Builder.Default private boolean active = true;
+    @Column(name = "workspace_id") private Long workspaceId;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp private LocalDateTime updatedAt;
 }

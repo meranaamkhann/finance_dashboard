@@ -21,6 +21,7 @@ public class Budget {
     @Column(nullable = false, precision = 15, scale = 2) private BigDecimal limitAmount;
     @Column(nullable = false) private LocalDate periodStart;
     @Column(nullable = false) private LocalDate periodEnd;
+    @Column(name = "workspace_id") private Long workspaceId;
     @Column(nullable = false) @Builder.Default private boolean active = true;
     @CreationTimestamp @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp private LocalDateTime updatedAt;

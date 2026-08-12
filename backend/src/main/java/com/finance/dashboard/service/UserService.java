@@ -27,6 +27,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
     private final ObjectMapper objectMapper;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     public UserResponse create(CreateUserRequest req, String actor, String ip) {
@@ -34,18 +35,29 @@ public class UserService {
             throw new DuplicateResourceException("Username taken: " + req.getUsername());
         if (userRepository.existsByEmailAndDeletedFalse(req.getEmail().toLowerCase()))
             throw new DuplicateResourceException("Email registered: " + req.getEmail());
+
+        Role assignedRole = "SELF_REGISTER".equals(actor) ? Role.ANALYST : req.getRole();
+
         User user = User.builder()
                 .username(req.getUsername().toLowerCase().trim())
                 .email(req.getEmail().toLowerCase().trim())
                 .fullName(req.getFullName().trim())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .role(Role.ANALYST)
-                .onTrial(true)
-                .trialEndsAt(LocalDateTime.now().plusDays(14))
+                .role(assignedRole)
+                .onTrial("SELF_REGISTER".equals(actor))
+                .trialEndsAt("SELF_REGISTER".equals(actor)
+                        ? java.time.LocalDateTime.now().plusDays(14) : null)
                 .build();
+
         userRepository.save(user);
+
+        if ("SELF_REGISTER".equals(actor)) {
+            workspaceService.createForUser(user);
+        }
+
         auditService.log(AuditAction.USER_CREATED, actor, "User", user.getId(),
                 null, json(user), ip, "Created: " + user.getUsername());
+
         return toResponse(user);
     }
 

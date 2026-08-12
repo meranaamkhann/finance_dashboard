@@ -18,6 +18,7 @@ public class RecurringTransactionService {
     private final RecurringTransactionRepository repo;
     private final SecurityUtils securityUtils;
     private final AuditService auditService;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     public RecurringTransactionResponse create(RecurringTransactionRequest req, String ip) {
@@ -28,6 +29,7 @@ public class RecurringTransactionService {
                 .frequency(req.getFrequency()).startDate(req.getStartDate())
                 .endDate(req.getEndDate())
                 .nextExecutionDate(RecurringUtils.initialNextDate(req.getStartDate(), req.getFrequency()))
+                .workspaceId(workspaceService.getMyWorkspaceId())
                 .build();
         repo.save(rt);
         auditService.log(AuditAction.RECURRING_CREATED, user.getUsername(),

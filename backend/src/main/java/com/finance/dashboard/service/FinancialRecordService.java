@@ -31,6 +31,7 @@ public class FinancialRecordService {
     private final AuditService auditService;
     private final BudgetAlertService budgetAlertService;
     private final ObjectMapper objectMapper;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     @Caching(evict = {
@@ -43,7 +44,7 @@ public class FinancialRecordService {
                 .type(req.getType()).category(req.getCategory()).amount(req.getAmount())
                 .date(req.getDate())
                 .description(req.getDescription() != null ? req.getDescription().trim() : null)
-                .tags(normaliseTags(req.getTags())).createdBy(actor).build();
+                .tags(normaliseTags(req.getTags())).createdBy(actor).workspaceId(workspaceService.getMyWorkspaceId()).build();
         recordRepository.save(r);
         auditService.log(AuditAction.RECORD_CREATED, actor.getUsername(),
                 "FinancialRecord", r.getId(), null, json(r), ip,
@@ -57,8 +58,13 @@ public class FinancialRecordService {
     public PagedResponse<FinancialRecordResponse> getAll(
             TransactionType type, Category category, LocalDate from, LocalDate to,
             String keyword, String tags, Long userId, Pageable pageable) {
+
+        Long workspaceId = workspaceService.getMyWorkspaceId();
+
         Specification<FinancialRecord> spec =
-                FinancialRecordSpecification.filter(type, category, from, to, keyword, tags, userId);
+                FinancialRecordSpecification.filter(
+                        type, category, from, to, keyword, tags, workspaceId);
+
         return new PagedResponse<>(recordRepository.findAll(spec, pageable).map(this::toResponse));
     }
 
