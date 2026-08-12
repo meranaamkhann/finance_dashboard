@@ -94,17 +94,17 @@ public class UserService {
             }
         }
 
-        if (req.getUsername() != null && !req.getUsername().equalsIgnoreCase(user.getUsername())) {
-            if (user.getRole() == Role.ANALYST) {
-                if (user.getUsernameChangesThisMonth() >= 2)
-                    throw new BadRequestException("Username can only be changed twice per month");
-                String norm = req.getUsername().toLowerCase().trim();
-                if (userRepository.existsByUsernameAndDeletedFalse(norm))
-                    throw new DuplicateResourceException("Username taken: " + norm);
-                user.setUsername(norm);
-                user.setUsernameChangesThisMonth(user.getUsernameChangesThisMonth() + 1);
-            }
-        }
+        // if (req.getUsername() != null && !req.getUsername().equalsIgnoreCase(user.getUsername())) {
+        //     if (user.getRole() == Role.ANALYST) {
+        //         if (user.getUsernameChangesThisMonth() >= 2)
+        //             throw new BadRequestException("Username can only be changed twice per month");
+        //         String norm = req.getUsername().toLowerCase().trim();
+        //         if (userRepository.existsByUsernameAndDeletedFalse(norm))
+        //             throw new DuplicateResourceException("Username taken: " + norm);
+        //         user.setUsername(norm);
+        //         user.setUsernameChangesThisMonth(user.getUsernameChangesThisMonth() + 1);
+        //     }
+        // }
 
         if (req.getFullName() != null && !req.getFullName().isBlank())
             user.setFullName(req.getFullName().trim());
