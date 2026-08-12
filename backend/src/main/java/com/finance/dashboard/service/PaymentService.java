@@ -131,10 +131,10 @@ public class PaymentService {
         Plan paidPlan   = payment.getPlan();
 
         if (!paidPlan.getSlug().equals("free")) {
-            payingUser.setRole(Role.ADMIN);
+            payingUser.setRole(Role.ANALYST);
             payingUser.setOnTrial(false);
             userRepository.save(payingUser);
-            log.info("User {} upgraded to ADMIN after payment for plan: {}",
+            log.info("User {} upgraded to ANALYST after payment for plan: {}",
                     payingUser.getUsername(), paidPlan.getName());
         }
 

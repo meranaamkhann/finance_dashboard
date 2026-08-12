@@ -20,10 +20,10 @@ public class TrialExpiryScheduler {
     @Transactional
     public void expireTrials() {
         userRepository.findExpiredTrials(LocalDateTime.now()).forEach(user -> {
-            user.setRole(Role.ANALYST);
+            user.setRole(Role.VIEWER);
             user.setOnTrial(false);
             userRepository.save(user);
-            log.info("Trial expired for user: {} — downgraded to ANALYST", user.getUsername());
+            log.info("Trial expired for user: {} — downgraded to VIEWER", user.getUsername());
         });
     }
 }

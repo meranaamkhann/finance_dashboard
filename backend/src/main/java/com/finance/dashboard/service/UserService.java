@@ -39,7 +39,7 @@ public class UserService {
                 .email(req.getEmail().toLowerCase().trim())
                 .fullName(req.getFullName().trim())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .role(Role.ADMIN)
+                .role(Role.ANALYST)
                 .onTrial(true)
                 .trialEndsAt(LocalDateTime.now().plusDays(14))
                 .build();
