@@ -28,6 +28,7 @@ public class WorkspaceService {
     private final UserRepository            userRepo;
     private final SubscriptionService       subscriptionService;
     private final SecurityUtils             securityUtils;
+    private final UserRepository            userRepository;
 
     @Transactional
     public Workspace createForUser(User user) {
@@ -47,14 +48,13 @@ public class WorkspaceService {
         return ws;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Workspace getMyWorkspace() {
         Long uid = securityUtils.getCurrentUserId();
-        return workspaceRepo.findByOwnerId(uid)
-                .or(() -> memberRepo.findAllByUserId(uid).stream()
-                        .map(WorkspaceMember::getWorkspace)
-                        .findFirst())
-                .orElseThrow(() -> new ResourceNotFoundException("No workspace found"));
+        User user = userRepository.findByIdAndDeletedFalse(uid)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            return workspaceRepo.findByOwnerId(uid)
+            .orElseGet(() -> createForUser(user));
     }
 
     @Transactional(readOnly = true)
@@ -65,38 +65,35 @@ public class WorkspaceService {
     @Transactional
     public WorkspaceMember inviteMember(String email, WorkspaceMemberRole role) {
         User currentUser = securityUtils.getCurrentUser();
-        Workspace ws     = workspaceRepo.findByOwnerId(currentUser.getId())
+        Workspace ws = workspaceRepo.findByOwnerId(currentUser.getId())
                 .orElseThrow(() -> new BadRequestException("Only workspace owners can invite members"));
 
         com.finance.dashboard.model.Plan plan = subscriptionService.getActivePlan(currentUser.getId());
-        int current = memberRepo.countByWorkspaceId(ws.getId());
-        if (current >= plan.getMaxUsers()) {
-            throw new SubscriptionLimitException(
-                "Your plan allows " + plan.getMaxUsers() + " member(s). Upgrade to add more.");
+
+        if (role == WorkspaceMemberRole.ANALYST) {
+            long analystCount = memberRepo.findAllByWorkspaceId(ws.getId()).stream()
+                    .filter(m -> m.getRole() == WorkspaceMemberRole.ANALYST
+                            || m.getRole() == WorkspaceMemberRole.OWNER)
+                    .count();
+            if (analystCount >= plan.getMaxUsers()) {
+                throw new SubscriptionLimitException(
+                    "Your plan allows " + plan.getMaxUsers()
+                    + " analyst(s). Upgrade to Team for up to 5 analysts.");
+            }
         }
 
-        User invitee = userRepo.findByEmailAndDeletedFalse(email.toLowerCase().trim())
+        User invitee = userRepository.findByEmailAndDeletedFalse(email.toLowerCase().trim())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No user found with email: " + email + ". They must register first."));
 
-        if (memberRepo.existsByWorkspaceIdAndUserId(ws.getId(), invitee.getId())) {
+        if (memberRepo.existsByWorkspaceIdAndUserId(ws.getId(), invitee.getId()))
             throw new BadRequestException("User is already a member of this workspace");
-        }
 
-        if (invitee.getId().equals(currentUser.getId())) {
+        if (invitee.getId().equals(currentUser.getId()))
             throw new BadRequestException("You are already the owner of this workspace");
-        }
 
-        WorkspaceMember member = memberRepo.save(WorkspaceMember.builder()
-                .workspace(ws)
-                .user(invitee)
-                .role(role)
-                .invitedBy(currentUser)
-                .build());
-
-        log.info("User {} invited {} as {} to workspace {}",
-                currentUser.getUsername(), email, role, ws.getId());
-        return member;
+        return memberRepo.save(WorkspaceMember.builder()
+                .workspace(ws).user(invitee).role(role).invitedBy(currentUser).build());
     }
 
     @Transactional

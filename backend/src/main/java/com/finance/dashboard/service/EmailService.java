@@ -40,6 +40,18 @@ public class EmailService {
     }
 
     @Async
+    public void sendEmailVerification(String toEmail, String token, String username) {
+        try {
+            Context ctx = new Context();
+            ctx.setVariable("username", username);
+            ctx.setVariable("verifyLink", frontendUrl + "/verify-email?token=" + token);
+            sendHtml(toEmail, "FinancePro — Verify Your Email", "emails/email-verification", ctx);
+        } catch (Exception e) {
+            log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    @Async
     public void sendLoginAlert(String toEmail, String username, String ip) {
         try {
             Context ctx = new Context();

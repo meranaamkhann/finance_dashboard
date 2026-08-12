@@ -9,7 +9,10 @@ import com.finance.dashboard.dto.request.ResetPasswordRequest;
 import com.finance.dashboard.dto.response.ApiResponse;
 import com.finance.dashboard.dto.response.AuthResponse;
 import com.finance.dashboard.dto.response.UserResponse;
+import com.finance.dashboard.model.User;
+import com.finance.dashboard.repository.UserRepository;
 import com.finance.dashboard.service.AuthService;
+import com.finance.dashboard.service.EmailVerificationService;
 import com.finance.dashboard.service.PasswordResetService;
 import com.finance.dashboard.service.UserService;
 import com.finance.dashboard.util.IpUtils;
@@ -35,19 +38,21 @@ public class AuthController {
     private final PasswordResetService passwordResetService;
     private final SecurityUtils securityUtils;
     private final UserService userService;
+    private final EmailVerificationService emailVerificationService;
+    private final UserRepository userRepository;
     
     @PostMapping("/register")
-    @Operation(summary = "Register a new user account")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody CreateUserRequest req,
             HttpServletRequest http) {
         UserResponse created = userService.create(req, "SELF_REGISTER", IpUtils.resolveIp(http));
+        User user = userRepository.findByUsernameAndDeletedFalse(req.getUsername().toLowerCase()).orElseThrow();emailVerificationService.sendVerification(user);
         LoginRequest loginReq = new LoginRequest();
         loginReq.setUsername(req.getUsername());
         loginReq.setPassword(req.getPassword());
         AuthResponse auth = authService.login(loginReq, IpUtils.resolveIp(http));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Account created successfully", auth));
+                .body(ApiResponse.ok("Account created! Please verify your email.", auth));
     }
 
     @PostMapping("/login")
@@ -105,5 +110,22 @@ public class AuthController {
             @Valid @RequestBody ResetPasswordRequest req) {
         passwordResetService.resetPassword(req);
         return ResponseEntity.ok(ApiResponse.ok("Password reset successful. Please log in.", null));
+    }
+
+    @GetMapping("/verify-email")
+    @Operation(summary = "Verify email address using token from email")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(@RequestParam String token) {
+        emailVerificationService.verify(token);
+        return ResponseEntity.ok(ApiResponse.ok("Email verified successfully. You can now log in.", null));
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Resend email verification link")
+    public ResponseEntity<ApiResponse<Void>> resendVerification(
+            @RequestBody @Valid ForgotPasswordRequest req) {
+        userRepository.findByEmailAndDeletedFalse(req.getEmail().toLowerCase().trim())
+                .ifPresent(emailVerificationService::sendVerification);
+        return ResponseEntity.ok(ApiResponse.ok(
+                "If that email exists and is unverified, a new link has been sent.", null));
     }
 }

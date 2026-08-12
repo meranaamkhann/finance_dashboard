@@ -228,21 +228,61 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--brand)' }}>
-              <TrendingUp className="w-3 h-3 text-white"/>
+      <footer className="border-t mt-16" style={{ borderColor: 'var(--border)' }}>
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--brand)' }}>
+                  <TrendingUp className="w-4 h-4 text-white"/>
+                </div>
+                <span className="font-bold" style={{ color: 'var(--text-main)' }}>FinancePro</span>
+              </div>
+              <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                Smart finance tracking for individuals and teams. Built with security and simplicity in mind.
+              </p>
             </div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>FinancePro</span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>Product</p>
+              <div className="space-y-2">
+                {[['Features','/#features'],['Pricing','/pricing'],['Dashboard','/dashboard'],['Register','/register']].map(([l,h])=>(
+                  <a key={l} href={h} className="block text-xs hover:underline" style={{ color: 'var(--text-faint)' }}>{l}</a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>Legal</p>
+              <div className="space-y-2">
+                {[['Privacy Policy','/privacy'],['Terms of Service','/terms'],['Cookie Policy','/cookies'],['Refund Policy','/refunds']].map(([l,h])=>(
+                  <a key={l} href={h} className="block text-xs hover:underline" style={{ color: 'var(--text-faint)' }}>{l}</a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>Contact</p>
+              <div className="space-y-2">
+                <a href="mailto:support@financepro.app" className="block text-xs hover:underline" style={{ color: 'var(--text-faint)' }}>
+                  support@financepro.app
+                </a>
+                <a href="https://github.com/meranaamkhann" target="_blank" rel="noreferrer" className="block text-xs hover:underline" style={{ color: 'var(--text-faint)' }}>
+                  GitHub
+                </a>
+                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>Response within 24 hours</p>
+              </div>
+            </div>
           </div>
-          <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-            Designed & built by Asad Khan    © 2026 All rights reserved. · {new Date().getFullYear()}
-          </p>
-          <div className="flex gap-4">
-            {['Privacy','Terms','Contact'].map(l => (
-              <button key={l} className="text-xs hover:underline" style={{ color: 'var(--text-faint)' }}>{l}</button>
-            ))}
+          <div className="flex flex-col md:flex-row items-center justify-between pt-6 border-t gap-3" style={{ borderColor: 'var(--border)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+              &copy; {new Date().getFullYear()} FinancePro. All rights reserved. Designed &amp; built by Asad Khan.
+            </p>
+            <div className="flex items-center gap-4">
+              <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--brand-light)', color: 'var(--brand)' }}>
+                🔒 Secured by JWT + BCrypt
+              </span>
+              <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                Payments by Razorpay
+              </span>
+            </div>
           </div>
         </div>
       </footer>

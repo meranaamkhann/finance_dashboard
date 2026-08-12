@@ -74,7 +74,7 @@ export default function RecordsPage() {
         <input type="date" className="input w-auto" value={filters.dateFrom} onChange={e=>setFilters(f=>({...f,dateFrom:e.target.value}))}/>
         <input type="date" className="input w-auto" value={filters.dateTo}   onChange={e=>setFilters(f=>({...f,dateTo:e.target.value}))}/>
         <div className="flex gap-2 ml-auto">
-          {isAdmin() && <button className="btn-primary" onClick={openCreate}><Plus className="w-4 h-4"/>Add</button>}
+          {(isAdmin() || isAnalyst()) && <button className="btn-primary" onClick={openCreate}><Plus className="w-4 h-4"/>Add</button>}
           <button className="btn-secondary" onClick={exportCsv}><Download className="w-4 h-4"/>CSV</button>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function RecordsPage() {
                   <td className={`table-cell font-semibold ${r.type==='INCOME'?'text-green-700':'text-red-700'}`}>{fmt.currency(r.amount)}</td>
                   <td className="table-cell text-slate-500 max-w-xs truncate">{r.description??'—'}</td>
                   <td className="table-cell">
-                    {isAdmin() && <div className="flex gap-1">
+                    {(isAdmin() || isAnalyst()) && <div className="flex gap-1">
                       <button onClick={()=>openEdit(r)} className="p-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-brand-600"><Pencil className="w-3.5 h-3.5"/></button>
                       <button onClick={()=>del(r.id)}   className="p-1.5 rounded hover:bg-red-50  text-slate-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5"/></button>
                     </div>}

@@ -22,6 +22,7 @@ import ProfilePage        from './pages/ProfilePage'
 import PricingPage        from './pages/PricingPage'
 import RegisterPage from './pages/RegisterPage'
 import WorkspacePage from './pages/WorkspacePage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
 
 function Spinner404() {
   return (
@@ -105,6 +106,7 @@ function AppRoutes() {
       <Route path="*" element={<Spinner404/>}/>
       <Route path="/register" element={user ? <Navigate to="/dashboard" replace/> : <RegisterPage/>}/>
       <Route path="/workspace" element={  <Guard analyst><AppLayout><WorkspacePage/></AppLayout></Guard>}/>
+      <Route path="/verify-email" element={<VerifyEmailPage/>}/>
     </Routes>
   )
 }

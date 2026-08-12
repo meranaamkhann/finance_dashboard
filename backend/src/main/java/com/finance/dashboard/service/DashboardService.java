@@ -24,11 +24,14 @@ public class DashboardService {
     private final FinancialHealthScoreService healthScoreService;
     private final SecurityUtils securityUtils;
     private static final DateTimeFormatter MONTH_FMT = DateTimeFormatter.ofPattern("MMM yyyy");
+    private final WorkspaceService workspaceService;
 
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getSummary() {
         Long uid = securityUtils.getCurrentUserId();
+        Long workspaceId = workspaceService.getMyWorkspaceId();
         LocalDate som = LocalDate.now().withDayOfMonth(1), today = LocalDate.now();
+        LocalDate today  = LocalDate.now();
         BigDecimal income  = zero(recordRepository.sumByUserAndTypeAndDateBetween(uid, TransactionType.INCOME,  som, today));
         BigDecimal expense = zero(recordRepository.sumByUserAndTypeAndDateBetween(uid, TransactionType.EXPENSE, som, today));
         BigDecimal net = income.subtract(expense);

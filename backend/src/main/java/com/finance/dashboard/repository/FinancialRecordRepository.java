@@ -19,6 +19,17 @@ public interface FinancialRecordRepository
     Optional<FinancialRecord> findByIdAndDeletedFalse(Long id);
     long countByCreatedByIdAndDeletedFalse(Long userId);
 
+        @Query("SELECT SUM(r.amount) FROM FinancialRecord r " +
+        "WHERE r.workspaceId = :workspaceId " +
+        "AND r.type = :type " +
+        "AND r.date BETWEEN :from AND :to " +
+        "AND r.deleted = false")
+        BigDecimal sumByWorkspaceAndTypeAndDateBetween(
+                @Param("workspaceId") Long workspaceId,
+                @Param("type") TransactionType type,
+                @Param("from") LocalDate from,
+                @Param("to") LocalDate to);
+                
     @Query("SELECT COALESCE(SUM(r.amount), 0) FROM FinancialRecord r " +
            "WHERE r.createdBy.id = :uid AND r.type = :type " +
            "AND r.deleted = false AND r.date BETWEEN :from AND :to")

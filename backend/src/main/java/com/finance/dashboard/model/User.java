@@ -34,6 +34,22 @@ public class User {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "email_changes_this_month")
+    @Builder.Default
+    private int emailChangesThisMonth = 0;
+
+    @Column(name = "username_changes_this_month")
+    @Builder.Default
+    private int usernameChangesThisMonth = 0;
+
+    @Column(name = "last_change_reset_month")
+    @Builder.Default
+    private int lastChangeResetMonth = 0;
+
+    @Column(name = "last_change_reset_year")
+    @Builder.Default
+    private int lastChangeResetYear = 0;
+
     @Column(name = "email_verified", nullable = false)
     @Builder.Default
     private boolean emailVerified = false;

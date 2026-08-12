@@ -72,7 +72,11 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/actuator/health",
                     "/login/oauth2/**",
-                    "/oauth2/**"
+                    "/oauth2/**",
+                    "/api/auth/verify-email",
+                    "/api/auth/resend-verification",
+                    "/api/auth/forgot-password",
+                    "/api/auth/reset-password"
                 ).permitAll();
 
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
@@ -86,9 +90,9 @@ public class SecurityConfig {
                 auth.requestMatchers("/api/audit/**").hasRole("ADMIN");
                 auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
 
-                auth.requestMatchers(HttpMethod.POST, "/api/records").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.PUT, "/api/records/**").hasRole("ADMIN");
-                auth.requestMatchers(HttpMethod.DELETE, "/api/records/**").hasRole("ADMIN");
+                auth.requestMatchers(HttpMethod.POST,   "/api/records").hasAnyRole("ANALYST","ADMIN");
+                auth.requestMatchers(HttpMethod.PUT,    "/api/records/**").hasAnyRole("ANALYST","ADMIN");
+                auth.requestMatchers(HttpMethod.DELETE, "/api/records/**").hasAnyRole("ANALYST","ADMIN");
 
                 auth.requestMatchers(
                     "/api/records/export/**",

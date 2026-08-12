@@ -78,19 +78,53 @@ public class UserService {
     public UserResponse update(Long id, UpdateUserRequest req, String actor, String ip) {
         User user = findActive(id);
         String before = json(user);
+
+        resetMonthlyCountersIfNeeded(user);
+
         if (req.getEmail() != null && !req.getEmail().equalsIgnoreCase(user.getEmail())) {
-            String norm = req.getEmail().toLowerCase().trim();
-            if (userRepository.existsByEmailAndDeletedFalse(norm))
-                throw new DuplicateResourceException("Email taken: " + norm);
-            user.setEmail(norm);
+            if ("SELF_REGISTER".equals(actor) || user.getRole() == Role.ANALYST) {
+                if (user.getEmailChangesThisMonth() >= 2)
+                    throw new BadRequestException("Email can only be changed twice per month");
+                String norm = req.getEmail().toLowerCase().trim();
+                if (userRepository.existsByEmailAndDeletedFalse(norm))
+                    throw new DuplicateResourceException("Email taken: " + norm);
+                user.setEmail(norm);
+                user.setEmailVerified(false);
+                user.setEmailChangesThisMonth(user.getEmailChangesThisMonth() + 1);
+            }
         }
+
+        if (req.getUsername() != null && !req.getUsername().equalsIgnoreCase(user.getUsername())) {
+            if (user.getRole() == Role.ANALYST) {
+                if (user.getUsernameChangesThisMonth() >= 2)
+                    throw new BadRequestException("Username can only be changed twice per month");
+                String norm = req.getUsername().toLowerCase().trim();
+                if (userRepository.existsByUsernameAndDeletedFalse(norm))
+                    throw new DuplicateResourceException("Username taken: " + norm);
+                user.setUsername(norm);
+                user.setUsernameChangesThisMonth(user.getUsernameChangesThisMonth() + 1);
+            }
+        }
+
         if (req.getFullName() != null && !req.getFullName().isBlank())
             user.setFullName(req.getFullName().trim());
-        if (req.getRole() != null) user.setRole(req.getRole());
+
         userRepository.save(user);
         auditService.log(AuditAction.USER_UPDATED, actor, "User", id, before, json(user), ip,
                 "Updated: " + user.getUsername());
         return toResponse(user);
+    }
+
+    private void resetMonthlyCountersIfNeeded(User user) {
+        int currentMonth = LocalDateTime.now().getMonthValue();
+        int currentYear  = LocalDateTime.now().getYear();
+        if (user.getLastChangeResetMonth() != currentMonth
+                || user.getLastChangeResetYear() != currentYear) {
+            user.setEmailChangesThisMonth(0);
+            user.setUsernameChangesThisMonth(0);
+            user.setLastChangeResetMonth(currentMonth);
+            user.setLastChangeResetYear(currentYear);
+        }
     }
 
     @Transactional
