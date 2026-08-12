@@ -30,7 +30,7 @@ public class DashboardService {
     public DashboardSummaryResponse getSummary() {
         Long uid = securityUtils.getCurrentUserId();
         Long workspaceId = workspaceService.getMyWorkspaceId();
-        LocalDate som = LocalDate.now().withDayOfMonth(1), today = LocalDate.now();
+        LocalDate som = LocalDate.now().withDayOfMonth(1);
         LocalDate today  = LocalDate.now();
         BigDecimal income  = zero(recordRepository.sumByUserAndTypeAndDateBetween(uid, TransactionType.INCOME,  som, today));
         BigDecimal expense = zero(recordRepository.sumByUserAndTypeAndDateBetween(uid, TransactionType.EXPENSE, som, today));
