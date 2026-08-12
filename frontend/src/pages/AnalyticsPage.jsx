@@ -6,8 +6,11 @@ import Spinner from '../components/ui/Spinner'
 import SpendingPieChart from '../components/charts/SpendingPieChart'
 import MonthlyBarChart from '../components/charts/MonthlyBarChart'
 import HealthGauge from '../components/charts/HealthGauge'
+import { useAuth } from '../context/AuthContext'
+
 export default function AnalyticsPage() {
   const toast=useToast()
+  const { isAnalyst } = useAuth()
   const [health,setHealth]=useState(null); const [trend,setTrend]=useState([]); const [cats,setCats]=useState([])
   const [daySpend,setDaySpend]=useState({}); const [months,setMonths]=useState(6); const [loading,setLoading]=useState(true)
   useEffect(()=>{

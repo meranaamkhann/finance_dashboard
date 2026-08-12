@@ -33,12 +33,17 @@ public class WorkspaceController {
     private final SecurityUtils       securityUtils;
 
     @GetMapping
-    @Operation(summary = "Get my workspace info")
     public ResponseEntity<ApiResponse<WorkspaceResponse>> getMyWorkspace() {
-        Workspace ws   = workspaceService.getMyWorkspace();
+        Workspace ws = workspaceService.getMyWorkspace();
         List<WorkspaceMember> members = workspaceService.getMembers();
-        int maxUsers = subscriptionService
-                .getActivePlan(securityUtils.getCurrentUserId()).getMaxUsers();
+
+        int maxUsers = 1;
+        try {
+            maxUsers = subscriptionService
+                    .getActivePlan(securityUtils.getCurrentUserId()).getMaxUsers();
+        } catch (Exception e) {
+            maxUsers = 1;
+        }
 
         WorkspaceResponse res = WorkspaceResponse.builder()
                 .id(ws.getId())

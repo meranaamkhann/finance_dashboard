@@ -11,7 +11,7 @@ import { Plus, Search, Download, Trash2, Pencil, ArrowLeftRight, ChevronLeft, Ch
 const BLANK = { type:'EXPENSE', category:'FOOD', amount:'', date:fmt.dateInput(new Date()), description:'', tags:'' }
 
 export default function RecordsPage() {
-  const { isAdmin } = useAuth(); const toast = useToast()
+  const { isAdmin, isAnalyst } = useAuth(); const toast = useToast()
   const [records, setRecords] = useState([]); const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0); const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(null); const [editing, setEditing] = useState(null)

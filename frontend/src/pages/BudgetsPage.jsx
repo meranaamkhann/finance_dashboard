@@ -7,11 +7,14 @@ import EmptyState from '../components/ui/EmptyState'
 import Spinner from '../components/ui/Spinner'
 import ProgressBar from '../components/ui/ProgressBar'
 import { PiggyBank, Plus, Trash2, Pencil } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+
 const CATS=['FOOD','RENT','UTILITIES','TRANSPORT','HEALTHCARE','EDUCATION','ENTERTAINMENT','SHOPPING','TRAVEL','INSURANCE','SAVINGS','EMI','SUBSCRIPTION','PERSONAL_CARE','HOME','OTHER_EXPENSE']
 const BLANK={category:'FOOD',limitAmount:'',periodStart:'',periodEnd:''}
 const STATUS_COLOR={ON_TRACK:'text-green-600',WARNING:'text-yellow-600',CRITICAL:'text-red-600',EXCEEDED:'text-red-700'}
 export default function BudgetsPage() {
   const toast=useToast()
+  const { isAnalyst } = useAuth()
   const [budgets,setBudgets]=useState([]); const [loading,setLoading]=useState(true)
   const [modal,setModal]=useState(null); const [editing,setEditing]=useState(null)
   const [form,setForm]=useState(BLANK); const [saving,setSaving]=useState(false)

@@ -6,7 +6,7 @@ import { useToast } from '../components/ui/Toast'
 import { User, Lock, CreditCard, FileText, LogOut, ExternalLink, Eye, EyeOff } from 'lucide-react'
 
 export default function ProfilePage() {
-  const { user, logout }    = useAuth()
+  const { user, logout, isAnalyst }    = useAuth()
   const toast               = useToast()
   const nav                 = useNavigate()
   const [tab, setTab]       = useState('profile')

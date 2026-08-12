@@ -19,14 +19,23 @@ export default function WorkspacePage() {
   const [modal, setModal]         = useState(false)
   const [form, setForm]           = useState({ email: '', role: 'VIEWER' })
   const [saving, setSaving]       = useState(false)
+  const [error, setError] = useState('')
 
   const load = async () => {
     setLoading(true)
     try {
       const { data } = await api.get('/workspace')
       setWorkspace(data.data)
-    } catch { toast('Failed to load workspace', 'error') }
-    finally { setLoading(false) }
+    } catch (e) {
+      if (e.response?.status === 404 || e.response?.status === 500) {
+        setWorkspace(null)
+        setError('No workspace found. This may take a moment to set up.')
+      } else {
+        toast('Failed to load workspace', 'error')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -66,7 +75,12 @@ export default function WorkspacePage() {
 
   return (
     <div className="space-y-5 max-w-3xl">
-
+      {error && (
+          <div className="card p-6 text-center">
+            <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{error}</p>
+            <button onClick={load} className="btn-primary">Retry</button>
+          </div>
+        )}
       <div className="card p-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>

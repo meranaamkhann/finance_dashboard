@@ -6,9 +6,12 @@ import Modal from '../components/ui/Modal'
 import EmptyState from '../components/ui/EmptyState'
 import Spinner from '../components/ui/Spinner'
 import { RefreshCw, Plus, Trash2, Pencil } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+
 const BLANK={name:'',type:'EXPENSE',category:'FOOD',amount:'',frequency:'MONTHLY',startDate:'',endDate:''}
 export default function RecurringPage() {
   const toast=useToast()
+  const { isAnalyst } = useAuth()
   const [rules,setRules]=useState([]); const [loading,setLoading]=useState(true)
   const [modal,setModal]=useState(null); const [editing,setEditing]=useState(null)
   const [form,setForm]=useState(BLANK); const [saving,setSaving]=useState(false)

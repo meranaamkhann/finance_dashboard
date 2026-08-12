@@ -105,7 +105,7 @@ function AppRoutes() {
 
       <Route path="*" element={<Spinner404/>}/>
       <Route path="/register" element={user ? <Navigate to="/dashboard" replace/> : <RegisterPage/>}/>
-      <Route path="/workspace" element={  <Guard analyst><AppLayout><WorkspacePage/></AppLayout></Guard>}/>
+      <Route path="/workspace" element={   <Guard><AppLayout><WorkspacePage/></AppLayout></Guard>}/>
       <Route path="/verify-email" element={<VerifyEmailPage/>}/>
     </Routes>
   )

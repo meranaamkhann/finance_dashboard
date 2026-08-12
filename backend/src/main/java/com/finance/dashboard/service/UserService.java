@@ -13,21 +13,24 @@ import com.finance.dashboard.model.enums.AuditAction;
 import com.finance.dashboard.model.enums.Role;
 import com.finance.dashboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service @RequiredArgsConstructor
+@Service @RequiredArgsConstructor @Slf4j
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
     private final ObjectMapper objectMapper;
-    private final WorkspaceService workspaceService;
+    @Autowired(required = false)
+    private WorkspaceService workspaceService;
 
     @Transactional
     public UserResponse create(CreateUserRequest req, String actor, String ip) {
@@ -36,28 +39,28 @@ public class UserService {
         if (userRepository.existsByEmailAndDeletedFalse(req.getEmail().toLowerCase()))
             throw new DuplicateResourceException("Email registered: " + req.getEmail());
 
-        Role assignedRole = "SELF_REGISTER".equals(actor) ? Role.ANALYST : req.getRole();
+        boolean selfRegister = "SELF_REGISTER".equals(actor);
 
         User user = User.builder()
                 .username(req.getUsername().toLowerCase().trim())
                 .email(req.getEmail().toLowerCase().trim())
                 .fullName(req.getFullName().trim())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .role(assignedRole)
-                .onTrial("SELF_REGISTER".equals(actor))
-                .trialEndsAt("SELF_REGISTER".equals(actor)
-                        ? java.time.LocalDateTime.now().plusDays(14) : null)
+                .role(selfRegister ? Role.ANALYST : (req.getRole() != null ? req.getRole() : Role.VIEWER))
                 .build();
 
         userRepository.save(user);
 
-        if ("SELF_REGISTER".equals(actor)) {
-            workspaceService.createForUser(user);
+        try {
+            if (selfRegister && workspaceService != null) {
+                workspaceService.createForUser(user);
+            }
+        } catch (Exception e) {
+            log.warn("Could not create workspace for user {}: {}", user.getUsername(), e.getMessage());
         }
 
         auditService.log(AuditAction.USER_CREATED, actor, "User", user.getId(),
                 null, json(user), ip, "Created: " + user.getUsername());
-
         return toResponse(user);
     }
 
