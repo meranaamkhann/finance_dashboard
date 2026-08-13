@@ -54,6 +54,18 @@ export default function PricingPage() {
     })
   }
 
+    const handlePlanClick = (plan) => {
+    if (plan.slug === 'free') {
+      checkout(plan)
+      return
+    }
+
+    toast(
+      `${plan.name} is coming soon. Payment options will be available in a future release.`,
+      'info'
+    )
+  }
+
   const checkout = async (plan) => {
     if (!user) { nav('/login'); return }
     if (plan.slug === 'free') {
@@ -206,12 +218,12 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => checkout(plan)}
+                  onClick={() => handlePlanClick(plan)}
                   disabled={paying === plan.slug}
                   className={isPro ? 'btn-primary w-full justify-center py-2.5' : 'btn-secondary w-full justify-center py-2.5'}>
                   {paying === plan.slug ? 'Processing…'
                     : plan.slug === 'free' ? 'Get Started Free'
-                    : `Subscribe to ${plan.name}`}
+                    : `Coming Soon`}
                 </button>
               </div>
             )
@@ -220,7 +232,8 @@ export default function PricingPage() {
 
         <p className="text-center text-xs mt-8" style={{ color: 'var(--text-faint)' }}>
           All prices inclusive of applicable taxes. Cancel anytime.
-          Payments secured by Razorpay.
+          <br />
+          Pro and Team payment options are coming soon.
         </p>
       </div>
     </div>

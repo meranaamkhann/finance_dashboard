@@ -92,10 +92,19 @@ export default function WorkspacePage() {
   const isOwner = workspace?.members?.find(
     m => m.role === 'OWNER'
   )
-  const canInvite = workspace && workspace.memberCount < workspace.maxMembers
+  // const analystCount = workspace?.analystCount ?? 0
+  // const maxAnalysts = workspace?.maxAnalysts ?? 0
+
+  // const analystSeatsAvailable = analystCount < maxAnalysts
   const analystCount = workspace?.members?.filter(
-    m => m.role === 'ANALYST' || m.role === 'OWNER'
+    m => m.role === 'ANALYST'
   ).length || 0
+
+  const canInvite =
+  workspace && analystCount < workspace.maxMembers
+
+  const analystSeatsAvailable =
+  workspace && analystCount < workspace.maxMembers
 
   return (
     <div className="space-y-5 max-w-3xl">
@@ -107,20 +116,20 @@ export default function WorkspacePage() {
               {workspace?.name}
             </h2>
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-              {workspace?.memberCount} / {workspace?.maxMembers} analyst seats used
+              {analystCount} / {workspace?.maxMembers} analyst seats used
               &nbsp;·&nbsp;
               Unlimited viewers
             </p>
           </div>
           <button
             onClick={() => setModal('invite')}
-            disabled={!canInvite && form.role === 'ANALYST'}
+            disabled={!analystSeatsAvailable}
             className="btn-primary gap-2">
             <Plus className="w-4 h-4"/> Invite Member
           </button>
         </div>
 
-        {!canInvite && (
+        {!analystSeatsAvailable && (
           <div className="mt-4 flex items-start gap-2 px-3 py-2.5 rounded-lg text-sm"
                style={{ background: 'var(--brand-light)', color: 'var(--brand)' }}>
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/>
@@ -228,7 +237,7 @@ export default function WorkspacePage() {
             <select className="input" value={form.role}
               onChange={e => setForm(f => ({...f, role: e.target.value}))}>
               <option value="VIEWER">Viewer — read only, no limits</option>
-              <option value="ANALYST">Analyst — can add/edit records (uses analyst seat)</option>
+              <option value="ANALYST" disabled={!analystSeatsAvailable}>Analyst — can add/edit records (uses analyst seat) {!analystSeatsAvailable ? ' (no seats available)' : ''}</option>
             </select>
             {form.role === 'ANALYST' && !canInvite && (
               <p className="text-xs text-red-500 mt-1">

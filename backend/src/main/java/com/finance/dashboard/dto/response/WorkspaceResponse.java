@@ -15,4 +15,6 @@ public class WorkspaceResponse {
     private int maxMembers;
     private List<WorkspaceMemberResponse> members;
     private LocalDateTime createdAt;
+    private int analystCount;
+    private int maxAnalysts;
 }

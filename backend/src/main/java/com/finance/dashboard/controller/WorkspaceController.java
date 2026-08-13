@@ -4,6 +4,7 @@ import com.finance.dashboard.dto.request.InviteMemberRequest;
 import com.finance.dashboard.dto.response.ApiResponse;
 import com.finance.dashboard.dto.response.WorkspaceMemberResponse;
 import com.finance.dashboard.dto.response.WorkspaceResponse;
+import com.finance.dashboard.model.Plan;
 import com.finance.dashboard.model.Workspace;
 import com.finance.dashboard.model.WorkspaceMember;
 import com.finance.dashboard.model.enums.WorkspaceMemberRole;
@@ -18,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @RestController
@@ -28,31 +31,45 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class WorkspaceController {
 
-    private final WorkspaceService    workspaceService;
+    private final WorkspaceService workspaceService;
     private final SubscriptionService subscriptionService;
-    private final SecurityUtils       securityUtils;
+    private final SecurityUtils securityUtils;
 
+    @Transactional
     @GetMapping
+    @Operation(summary = "Get my workspace info")
     public ResponseEntity<ApiResponse<WorkspaceResponse>> getMyWorkspace() {
+
         Workspace ws = workspaceService.getMyWorkspace();
         List<WorkspaceMember> members = workspaceService.getMembers();
 
-        int maxUsers = 1;
-        try {
-            maxUsers = subscriptionService
-                    .getActivePlan(securityUtils.getCurrentUserId()).getMaxUsers();
-        } catch (Exception e) {
-            maxUsers = 1;
-        }
+        Plan activePlan = subscriptionService
+                .getActivePlan(securityUtils.getCurrentUserId());
+
+        int analystCount = (int) members.stream()
+                .filter(m -> m.getRole() == WorkspaceMemberRole.ANALYST)
+                .count();
+
+        int maxAnalysts = activePlan.getMaxUsers();
 
         WorkspaceResponse res = WorkspaceResponse.builder()
                 .id(ws.getId())
                 .name(ws.getName())
                 .ownerUsername(ws.getOwner().getUsername())
                 .ownerFullName(ws.getOwner().getFullName())
+
                 .memberCount(members.size())
-                .maxMembers(maxUsers)
-                .members(members.stream().map(this::toMemberResponse).toList())
+
+                .analystCount(analystCount)
+                .maxAnalysts(maxAnalysts)
+
+                .maxMembers(maxAnalysts)
+
+                .members(
+                        members.stream()
+                                .map(this::toMemberResponse)
+                                .toList()
+                )
                 .createdAt(ws.getCreatedAt())
                 .build();
 
@@ -63,9 +80,16 @@ public class WorkspaceController {
     @Operation(summary = "Invite a member to your workspace")
     public ResponseEntity<ApiResponse<WorkspaceMemberResponse>> invite(
             @Valid @RequestBody InviteMemberRequest req) {
-        WorkspaceMember member = workspaceService.inviteMember(req.getEmail(), req.getRole());
-        return ResponseEntity.ok(ApiResponse.ok("Member invited successfully",
-                toMemberResponse(member)));
+
+        WorkspaceMember member =
+                workspaceService.inviteMember(req.getEmail(), req.getRole());
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        "Member invited successfully",
+                        toMemberResponse(member)
+                )
+        );
     }
 
     @PutMapping("/members/{userId}/role")
@@ -73,18 +97,29 @@ public class WorkspaceController {
     public ResponseEntity<ApiResponse<Void>> changeRole(
             @PathVariable Long userId,
             @RequestParam WorkspaceMemberRole role) {
+
         workspaceService.updateMemberRole(userId, role);
-        return ResponseEntity.ok(ApiResponse.ok("Role updated", null));
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("Role updated", null)
+        );
     }
 
     @DeleteMapping("/members/{userId}")
     @Operation(summary = "Remove a member from your workspace")
-    public ResponseEntity<ApiResponse<Void>> removeMember(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<Void>> removeMember(
+            @PathVariable Long userId) {
+
         workspaceService.removeMember(userId);
-        return ResponseEntity.ok(ApiResponse.ok("Member removed", null));
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("Member removed", null)
+        );
     }
 
-    private WorkspaceMemberResponse toMemberResponse(WorkspaceMember m) {
+    private WorkspaceMemberResponse toMemberResponse(
+            WorkspaceMember m) {
+
         return WorkspaceMemberResponse.builder()
                 .id(m.getId())
                 .userId(m.getUser().getId())

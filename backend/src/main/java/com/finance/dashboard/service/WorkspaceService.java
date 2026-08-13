@@ -33,6 +33,11 @@ public class WorkspaceService {
     private final SubscriptionService subscriptionService;
     private final SecurityUtils securityUtils;
 
+    private int analystCount;
+private int maxAnalysts;
+private String planName;
+private String planSlug;
+
 
     @Transactional
     public Workspace createForUser(User user) {
@@ -131,18 +136,24 @@ public class WorkspaceService {
                         currentUser.getId()
                 );
 
-        int currentMembers =
-                memberRepo.countByWorkspaceId(
-                        workspace.getId()
-                );
+        long currentAnalysts = memberRepo
+            .findAllByWorkspaceId(workspace.getId())
+            .stream()
+            .filter(member ->
+                    member.getRole() == WorkspaceMemberRole.ANALYST
+            )
+            .count();
 
-        if (currentMembers >= plan.getMaxUsers()) {
-            throw new SubscriptionLimitException(
-                    "Your plan allows "
-                            + plan.getMaxUsers()
-                            + " member(s). Upgrade to add more."
-            );
-        }
+    if (role == WorkspaceMemberRole.ANALYST
+            && currentAnalysts >= plan.getMaxUsers()) {
+
+        throw new SubscriptionLimitException(
+                "Your " + plan.getName()
+                        + " plan allows up to "
+                        + plan.getMaxUsers()
+                        + " analyst seat(s). Upgrade your plan to add more analysts."
+        );
+    }
 
         User invitee =
                 userRepo
@@ -268,8 +279,31 @@ public class WorkspaceService {
                         )
                 );
 
-        member.setRole(newRole);
+                if (member.getRole() != WorkspaceMemberRole.ANALYST
+                && newRole == WorkspaceMemberRole.ANALYST) {
 
+            Plan plan =
+                    subscriptionService.getActivePlan(ownerId);
+
+            long currentAnalysts = memberRepo
+                    .findAllByWorkspaceId(workspace.getId())
+                    .stream()
+                    .filter(m ->
+                            m.getRole() == WorkspaceMemberRole.ANALYST
+                    )
+                    .count();
+
+            if (currentAnalysts >= plan.getMaxUsers()) {
+                throw new SubscriptionLimitException(
+                        "Your " + plan.getName()
+                                + " plan allows up to "
+                                + plan.getMaxUsers()
+                                + " analyst seat(s). Upgrade your plan to add more analysts."
+                );
+            }
+        }
+
+        member.setRole(newRole);
         memberRepo.save(member);
     }
 
