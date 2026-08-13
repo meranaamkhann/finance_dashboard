@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { useToast } from '../components/ui/Toast'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
-import EmptyState from '../components/ui/EmptyState'
-import { Users, Plus, Trash2, Crown, UserCheck } from 'lucide-react'
+import { Users, Plus, Trash2, Crown, Edit2, AlertCircle } from 'lucide-react'
 
-const ROLE_COLORS = {
+const ROLE_BADGE = {
   OWNER:   'badge-blue',
   ANALYST: 'badge-green',
   VIEWER:  'badge-gray',
@@ -14,38 +14,36 @@ const ROLE_COLORS = {
 
 export default function WorkspacePage() {
   const toast = useToast()
+  const nav   = useNavigate()
   const [workspace, setWorkspace] = useState(null)
   const [loading, setLoading]     = useState(true)
-  const [modal, setModal]         = useState(false)
+  const [error, setError]         = useState('')
+  const [modal, setModal]         = useState(null)
+  const [editing, setEditing]     = useState(null)
   const [form, setForm]           = useState({ email: '', role: 'VIEWER' })
   const [saving, setSaving]       = useState(false)
-  const [error, setError] = useState('')
 
   const load = async () => {
     setLoading(true)
+    setError('')
     try {
       const { data } = await api.get('/workspace')
       setWorkspace(data.data)
     } catch (e) {
-      if (e.response?.status === 404 || e.response?.status === 500) {
-        setWorkspace(null)
-        setError('No workspace found. This may take a moment to set up.')
-      } else {
-        toast('Failed to load workspace', 'error')
-      }
-    } finally {
-      setLoading(false)
-    }
+      const msg = e.response?.data?.message || 'Failed to load workspace'
+      setError(msg)
+    } finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
   const invite = async () => {
+    if (!form.email.trim()) return
     setSaving(true)
     try {
       await api.post('/workspace/members', form)
       toast('Member invited successfully', 'success')
-      setModal(false)
+      setModal(null)
       setForm({ email: '', role: 'VIEWER' })
       load()
     } catch (e) {
@@ -53,8 +51,18 @@ export default function WorkspacePage() {
     } finally { setSaving(false) }
   }
 
-  const remove = async (userId, username) => {
-    if (!confirm(`Remove ${username} from workspace?`)) return
+  const changeRole = async (userId, newRole) => {
+    try {
+      await api.put(`/workspace/members/${userId}/role?role=${newRole}`)
+      toast('Role updated', 'success')
+      load()
+    } catch (e) {
+      toast(e.response?.data?.message || 'Failed', 'error')
+    }
+  }
+
+  const remove = async (userId, name) => {
+    if (!confirm(`Remove ${name} from workspace?`)) return
     try {
       await api.delete(`/workspace/members/${userId}`)
       toast('Member removed', 'success')
@@ -65,115 +73,150 @@ export default function WorkspacePage() {
   }
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <Spinner size="lg"/>
+    <div className="flex items-center justify-center h-64"><Spinner size="lg"/></div>
+  )
+
+  if (error) return (
+    <div className="max-w-xl mx-auto mt-8">
+      <div className="card p-8 text-center">
+        <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500"/>
+        <h3 className="font-semibold mb-2" style={{ color: 'var(--text-main)' }}>
+          Could not load workspace
+        </h3>
+        <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>{error}</p>
+        <button onClick={load} className="btn-primary">Try Again</button>
+      </div>
     </div>
   )
 
+  const isOwner = workspace?.members?.find(
+    m => m.role === 'OWNER'
+  )
   const canInvite = workspace && workspace.memberCount < workspace.maxMembers
-  const isOwner   = m => m.role === 'OWNER'
+  const analystCount = workspace?.members?.filter(
+    m => m.role === 'ANALYST' || m.role === 'OWNER'
+  ).length || 0
 
   return (
     <div className="space-y-5 max-w-3xl">
-      {error && (
-          <div className="card p-6 text-center">
-            <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{error}</p>
-            <button onClick={load} className="btn-primary">Retry</button>
-          </div>
-        )}
+
       <div className="card p-5">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
-            <h2 className="font-semibold text-base" style={{ color: 'var(--text-main)' }}>
+            <h2 className="font-semibold text-lg" style={{ color: 'var(--text-main)' }}>
               {workspace?.name}
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              {workspace?.memberCount} / {workspace?.maxMembers} members
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              {workspace?.memberCount} / {workspace?.maxMembers} analyst seats used
+              &nbsp;·&nbsp;
+              Unlimited viewers
             </p>
           </div>
           <button
-            onClick={() => setModal(true)}
-            disabled={!canInvite}
-            className="btn-primary text-sm gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            title={!canInvite ? 'Upgrade your plan to add more members' : ''}>
+            onClick={() => setModal('invite')}
+            disabled={!canInvite && form.role === 'ANALYST'}
+            className="btn-primary gap-2">
             <Plus className="w-4 h-4"/> Invite Member
           </button>
         </div>
 
         {!canInvite && (
-          <div className="mt-3 px-3 py-2 rounded-lg text-xs"
+          <div className="mt-4 flex items-start gap-2 px-3 py-2.5 rounded-lg text-sm"
                style={{ background: 'var(--brand-light)', color: 'var(--brand)' }}>
-            You've reached your plan's member limit.{' '}
-            <a href="/pricing" style={{ fontWeight: 600, textDecoration: 'underline' }}>
-              Upgrade to Team
-            </a>{' '}
-            to add up to 5 members.
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/>
+            <span>
+              Analyst seats full ({analystCount}/{workspace?.maxMembers}).
+              You can still invite unlimited <strong>Viewers</strong>.{' '}
+              <a href="/pricing" className="underline font-semibold">Upgrade to Team</a>{' '}
+              for 5 analyst seats.
+            </span>
           </div>
         )}
       </div>
 
       <div className="card overflow-hidden">
+        <div className="px-5 py-3.5 border-b"
+             style={{ borderColor: 'var(--border)', background: 'var(--bg-page)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide"
+             style={{ color: 'var(--text-faint)' }}>
+            Workspace Members ({workspace?.members?.length || 0})
+          </p>
+        </div>
+
         {!workspace?.members?.length ? (
-          <EmptyState icon={Users} title="No members yet"
-            description="Invite team members to collaborate on this workspace"/>
+          <div className="flex flex-col items-center justify-center py-12">
+            <Users className="w-10 h-10 mb-3" style={{ color: 'var(--text-faint)' }}/>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
+              No members yet
+            </p>
+            <p className="text-xs mt-1 mb-4" style={{ color: 'var(--text-faint)' }}>
+              Invite team members to collaborate
+            </p>
+            <button onClick={() => setModal('invite')} className="btn-primary gap-2">
+              <Plus className="w-4 h-4"/> Invite First Member
+            </button>
+          </div>
         ) : (
-          <table className="w-full">
-            <thead className="border-b" style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}>
-              <tr>
-                {['Member','Email','Role',''].map(h => (
-                  <th key={h} className="table-header">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {workspace.members.map(m => (
-                <tr key={m.id} className="table-row">
-                  <td className="table-cell">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                           style={{ background: 'var(--brand)' }}>
-                        {(m.fullName || m.username)[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
-                          {m.fullName}
-                        </p>
-                        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                          @{m.username}
-                        </p>
-                      </div>
+          <div>
+            {workspace.members.map(m => (
+              <div key={m.id}
+                className="flex items-center justify-between px-5 py-4 border-b last:border-0"
+                style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+                       style={{ background: 'var(--brand)' }}>
+                    {(m.fullName || m.username)[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium truncate" style={{ color: 'var(--text-main)' }}>
+                        {m.fullName}
+                      </p>
+                      {m.role === 'OWNER' && <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0"/>}
                     </div>
-                  </td>
-                  <td className="table-cell text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {m.email}
-                  </td>
-                  <td className="table-cell">
-                    <span className={ROLE_COLORS[m.role] || 'badge-gray'}>
-                      {m.role === 'OWNER' && <Crown className="w-3 h-3 mr-1 inline"/>}
-                      {m.role}
-                    </span>
-                  </td>
-                  <td className="table-cell">
-                    {!isOwner(m) && (
+                    <p className="text-xs truncate" style={{ color: 'var(--text-faint)' }}>
+                      @{m.username} · {m.email}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-3">
+                  <span className={ROLE_BADGE[m.role] || 'badge-gray'}>
+                    {m.role}
+                  </span>
+                  {m.role !== 'OWNER' && (
+                    <>
+                      <select
+                        value={m.role}
+                        onChange={e => changeRole(m.userId, e.target.value)}
+                        className="text-xs border rounded-lg px-2 py-1 cursor-pointer"
+                        style={{
+                          borderColor: 'var(--border)',
+                          background: 'var(--bg-card)',
+                          color: 'var(--text-main)'
+                        }}>
+                        <option value="ANALYST">Analyst</option>
+                        <option value="VIEWER">Viewer</option>
+                      </select>
                       <button
-                        onClick={() => remove(m.userId, m.username)}
+                        onClick={() => remove(m.userId, m.fullName || m.username)}
                         className="p-1.5 rounded hover:bg-red-50 transition-colors text-slate-400 hover:text-red-500">
                         <Trash2 className="w-4 h-4"/>
                       </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Invite Team Member">
+      <Modal open={modal === 'invite'} onClose={() => setModal(null)} title="Invite Team Member">
         <div className="space-y-4">
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            The person must already have a FinancePro account.
-          </p>
+          <div className="px-3 py-2.5 rounded-lg text-sm"
+               style={{ background: 'var(--bg-page)', color: 'var(--text-muted)' }}>
+            The person must already have a FinancePro account registered with this email.
+          </div>
           <div>
             <label className="label">Email address</label>
             <input className="input" type="email" placeholder="colleague@example.com"
@@ -184,13 +227,21 @@ export default function WorkspacePage() {
             <label className="label">Role</label>
             <select className="input" value={form.role}
               onChange={e => setForm(f => ({...f, role: e.target.value}))}>
-              <option value="ANALYST">Analyst — can add and edit records</option>
-              <option value="VIEWER">Viewer — read only</option>
+              <option value="VIEWER">Viewer — read only, no limits</option>
+              <option value="ANALYST">Analyst — can add/edit records (uses analyst seat)</option>
             </select>
+            {form.role === 'ANALYST' && !canInvite && (
+              <p className="text-xs text-red-500 mt-1">
+                No analyst seats available. Upgrade or choose Viewer.
+              </p>
+            )}
           </div>
           <div className="flex gap-3 justify-end pt-2">
-            <button className="btn-secondary" onClick={() => setModal(false)}>Cancel</button>
-            <button className="btn-primary" onClick={invite} disabled={saving || !form.email}>
+            <button className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
+            <button
+              className="btn-primary"
+              onClick={invite}
+              disabled={saving || !form.email.trim() || (form.role === 'ANALYST' && !canInvite)}>
               {saving ? 'Inviting…' : 'Send Invite'}
             </button>
           </div>

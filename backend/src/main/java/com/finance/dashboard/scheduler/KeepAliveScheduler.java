@@ -10,6 +10,6 @@ public class KeepAliveScheduler {
 
     @Scheduled(fixedDelay = 840000)
     public void keepAlive() {
-        log.debug("Keep-alive ping");
+        log.debug("Keep-alive ping at {}", java.time.LocalDateTime.now());
     }
 }

@@ -300,7 +300,7 @@ export default function LoginPage() {
           </div>
 
           {/* Dev Credentials */}
-          <div
+          {/* <div
             className="mt-5 pt-4 border-t"
             style={{ borderColor: 'var(--border)' }}
           >
@@ -343,7 +343,7 @@ export default function LoginPage() {
                 </span>
               </button>
             ))}
-          </div>
+          </div> */}
 
           <div className="mt-4 pt-4 border-t text-center" style={{ borderColor: 'var(--border)' }}>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>

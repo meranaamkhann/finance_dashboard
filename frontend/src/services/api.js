@@ -141,3 +141,10 @@ export const downloadInvoice = async (paymentId) => {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+export const categoriesApi = {
+  getAll:  ()      => api.get('/categories'),
+  create:  d       => api.post('/categories', d),
+  update:  (id, d) => api.put(`/categories/${id}`, d),
+  delete:  id      => api.delete(`/categories/${id}`),
+}

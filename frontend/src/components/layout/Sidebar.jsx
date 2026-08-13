@@ -6,15 +6,17 @@ import {
 import { useAuth } from '../../context/AuthContext'
 
 const NAV = [
-  { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard',   roles: ['VIEWER','ANALYST','ADMIN'] },
-  { to: '/records',       icon: ArrowLeftRight,  label: 'Records',     roles: ['VIEWER','ANALYST','ADMIN'] },
-  { to: '/notifications', icon: Bell,            label: 'Alerts',      roles: ['VIEWER','ANALYST','ADMIN'] },
-  { to: '/profile',       icon: User,            label: 'Profile',     roles: ['VIEWER','ANALYST','ADMIN'] },
-  { to: '/budgets',       icon: PiggyBank,       label: 'Budgets',     roles: ['ANALYST','ADMIN'] },
-  { to: '/recurring',     icon: RefreshCw,       label: 'Recurring',   roles: ['ANALYST','ADMIN'] },
-  { to: '/analytics',     icon: BarChart2,       label: 'Analytics',   roles: ['ANALYST','ADMIN'] },
-  { to: '/users',         icon: Users,           label: 'Members',       roles: ['ANALYST','ADMIN'] },
-  { to: '/audit',         icon: ClipboardList,   label: 'Audit',       roles: ['ADMIN'] },
+  { to: '/dashboard',      icon: LayoutDashboard, label: 'Dashboard',   roles: ['VIEWER','ANALYST','ADMIN'] },
+  { to: '/records',        icon: ArrowLeftRight,  label: 'Records',     roles: ['VIEWER','ANALYST','ADMIN'] },
+  { to: '/notifications',  icon: Bell,            label: 'Alerts',      roles: ['VIEWER','ANALYST','ADMIN'] },
+  { to: '/profile',        icon: User,            label: 'Profile',     roles: ['VIEWER','ANALYST','ADMIN'] },
+  { to: '/budgets',        icon: PiggyBank,       label: 'Budgets',     roles: ['ANALYST','ADMIN'] },
+  { to: '/recurring',      icon: RefreshCw,       label: 'Recurring',   roles: ['ANALYST','ADMIN'] },
+  { to: '/analytics',      icon: BarChart2,       label: 'Analytics',   roles: ['ANALYST','ADMIN'] },
+  { to: '/workspace',      icon: Users,           label: 'Members',     roles: ['ANALYST','ADMIN'] },
+  { to: '/users',          icon: ClipboardList,   label: 'Users',       roles: ['ADMIN'] },
+  { to: '/audit',          icon: ClipboardList,   label: 'Audit',       roles: ['ADMIN'] },
+  { to: '/categories', icon: Tag, label: 'Categories', roles: ['ANALYST','ADMIN'] },
 ]
 
 export default function Sidebar() {
@@ -28,7 +30,7 @@ export default function Sidebar() {
     >
       <button
         onClick={() => nav('/')}
-        className="px-5 py-5 border-b flex items-center gap-2.5 hover:opacity-90 transition-opacity text-left"
+        className="px-5 py-5 border-b flex items-center gap-2.5 hover:opacity-90 transition-opacity text-left w-full"
         style={{ borderColor: 'var(--border)' }}
       >
         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
