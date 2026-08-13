@@ -219,33 +219,33 @@ alt="FinancePro Landing Page" />
 ### Features
 
 <figure>
-<img src="docs/screenshots/features.png" alt="FinancePro Features" />
+<img src="docs/screenshots/Features.png" alt="FinancePro Features" />
 <figcaption aria-hidden="true">FinancePro Features</figcaption>
 </figure>
 
 ### Authentication
 
 <figure>
-<img src="docs/screenshots/sign-in.png" alt="FinancePro Sign In" />
+<img src="docs/screenshots/Sign in.png" alt="FinancePro Sign In" />
 <figcaption aria-hidden="true">FinancePro Sign In</figcaption>
 </figure>
 
 ### Dashboard
 
 <figure>
-<img src="docs/screenshots/dashboard.png" alt="FinancePro Dashboard" />
+<img src="docs/screenshots/Dashboard.png" alt="FinancePro Dashboard" />
 <figcaption aria-hidden="true">FinancePro Dashboard</figcaption>
 </figure>
 
 ### Financial Analytics
 
 <figure>
-<img src="docs/screenshots/analytics.png" alt="FinancePro Analytics" />
+<img src="docs/screenshots/Analytics.png" alt="FinancePro Analytics" />
 <figcaption aria-hidden="true">FinancePro Analytics</figcaption>
 </figure>
 
 <figure>
-<img src="docs/screenshots/analytics-details.png"
+<img src="docs/screenshots/Analytics II.png"
 alt="FinancePro Analytics Details" />
 <figcaption aria-hidden="true">FinancePro Analytics Details</figcaption>
 </figure>
@@ -253,14 +253,14 @@ alt="FinancePro Analytics Details" />
 ### Financial Records
 
 <figure>
-<img src="docs/screenshots/records.png" alt="FinancePro Records" />
+<img src="docs/screenshots/Records.png" alt="FinancePro Records" />
 <figcaption aria-hidden="true">FinancePro Records</figcaption>
 </figure>
 
 ### Recurring Transactions
 
 <figure>
-<img src="docs/screenshots/recurring.png"
+<img src="docs/screenshots/Recurring.png"
 alt="FinancePro Recurring Transactions" />
 <figcaption aria-hidden="true">FinancePro Recurring
 Transactions</figcaption>
@@ -277,7 +277,7 @@ alt="FinancePro Categories" />
 ### Workspace Members
 
 <figure>
-<img src="docs/screenshots/members.png"
+<img src="docs/screenshots/Members.png"
 alt="FinancePro Workspace Members" />
 <figcaption aria-hidden="true">FinancePro Workspace Members</figcaption>
 </figure>
@@ -285,7 +285,7 @@ alt="FinancePro Workspace Members" />
 ### Profile & Account
 
 <figure>
-<img src="docs/screenshots/profile.png" alt="FinancePro Profile" />
+<img src="docs/screenshots/Profile.png" alt="FinancePro Profile" />
 <figcaption aria-hidden="true">FinancePro Profile</figcaption>
 </figure>
 
