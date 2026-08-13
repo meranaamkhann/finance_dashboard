@@ -211,7 +211,7 @@ Audit information includes:
 ### Landing Page
 
 <figure>
-<img src="docs/screenshots/landing-page.png"
+<img src="docs/screenshots/Landing page.png"
 alt="FinancePro Landing Page" />
 <figcaption aria-hidden="true">FinancePro Landing Page</figcaption>
 </figure>
