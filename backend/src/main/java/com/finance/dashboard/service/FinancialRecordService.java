@@ -49,8 +49,13 @@ public class FinancialRecordService {
         auditService.log(AuditAction.RECORD_CREATED, actor.getUsername(),
                 "FinancialRecord", r.getId(), null, json(r), ip,
                 req.getType() + " Rs." + req.getAmount() + " [" + req.getCategory() + "]");
-        if (req.getType() == TransactionType.EXPENSE)
-            budgetAlertService.evaluate(actor, req.getCategory(), req.getDate());
+        if (req.getType() == TransactionType.EXPENSE) {
+            try {
+                Category systemCategory = Category.valueOf(req.getCategory());
+                budgetAlertService.evaluate(actor, systemCategory, req.getDate());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
         return toResponse(r);
     }
 

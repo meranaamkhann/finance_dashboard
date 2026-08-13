@@ -37,7 +37,7 @@ public class ExportService {
             writer.writeNext(HEADERS);
             for (FinancialRecord r : records) {
                 writer.writeNext(new String[]{
-                    String.valueOf(r.getId()), r.getType().name(), r.getCategory().name(),
+                    String.valueOf(r.getId()), r.getType().name(), r.getCategory(),
                     r.getAmount().toPlainString(), r.getDate().toString(),
                     r.getDescription() != null ? r.getDescription() : "",
                     r.getTags() != null ? r.getTags() : "",

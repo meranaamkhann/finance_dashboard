@@ -308,7 +308,7 @@ public class DataSeeder {
         recordRepo.save(
                 FinancialRecord.builder()
                         .type(t)
-                        .category(c)
+                        .category(c.name())
                         .amount(new BigDecimal(amt))
                         .date(d)
                         .description(desc)
