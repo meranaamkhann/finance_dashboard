@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { planApi } from '../services/planApi'
+import { planApi } from '../services/api'
 import { useToast } from '../components/ui/Toast'
 import Spinner from '../components/ui/Spinner'
 import { Check, Zap } from 'lucide-react'

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, ArrowLeftRight, PiggyBank, RefreshCw,
-  Bell, Users, ClipboardList, LogOut, TrendingUp, User, BarChart2
+  Bell, Users, Tag, ClipboardList, LogOut, TrendingUp, User, BarChart2
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
