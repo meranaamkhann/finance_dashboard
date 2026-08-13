@@ -1,8 +1,8 @@
 # Finance Dashboard
 
-🌐 **Live Demo:** [Add deployed frontend URL]
+🌐 **Live Demo:** https://finance-pro-sibbus.vercel.app/
 
-📖 **API Documentation:** [Add deployed Swagger URL]
+📖 **API Documentation:** https://finance-pro-e5cl.onrender.com/swagger-ui.html 
 
 A full-stack finance management platform built with **React + Vite** and **Spring Boot**, featuring JWT authentication, role-based access control, workspace collaboration, subscription plans, budgeting, analytics, custom categories, audit logging, and REST APIs.
 
@@ -78,22 +78,23 @@ Budget status is calculated automatically:
 90–99%      CRITICAL
 >= 100%     EXCEEDED
 
-Categories
-System categories
-Workspace-specific custom categories
-Category colors
-Income and expense category types
-Duplicate category prevention
-Protected system categories
-Workspace-level category isolation
-Workspace Collaboration
-Workspace creation
-Workspace ownership
-Member invitations
-Member removal
-Member role management
-Workspace member limits
-Workspace-level access control
+#  Categories
+- System categories
+- Workspace-specific custom categories
+- Category colors
+- Income and expense category types
+- Duplicate category prevention
+- Protected system categories
+- Workspace-level category isolation
+
+# Workspace Collaboration
+- Workspace creation
+- Workspace ownership
+- Member invitations
+- Member removal
+- Member role management
+- Workspace member limits
+- Workspace-level access control
 
 Example:
 
@@ -103,20 +104,21 @@ Workspace
 ├── Financial Records
 ├── Budgets
 └── Custom Categories
-Subscription Plans
+
+# Subscription Plans
 
 Finance Dashboard includes subscription-based access control.
 
 Plans support:
 
-Free plan
-Pro plan
-Team plan
-Monthly billing
-Yearly billing
-Plan-specific features
-Member limits
-Server-side subscription enforcement
+- Free plan
+- Pro plan
+- Team plan
+- Monthly billing
+- Yearly billing
+- Plan-specific features
+- Member limits
+- Server-side subscription enforcement
 
 Subscription restrictions are enforced by the backend rather than relying only on frontend checks.
 
@@ -142,20 +144,21 @@ Plan Limit Check
 
 This prevents users from bypassing plan restrictions by directly calling the API.
 
-Audit Trail
+# Audit Trail
 
 Important operations are recorded through the audit system.
 
 Audit information includes:
 
-Action
-User
-Entity
-Entity ID
-Timestamp
-IP address
-Description
-Payments
+- Action
+- User
+- Entity
+- Entity ID
+- Timestamp
+- IP address
+- Description
+
+# Payments
 
 Razorpay payment infrastructure is integrated into the application architecture for subscription checkout and payment verification.
 
@@ -179,7 +182,8 @@ Subscription Activation
 
 Production payment activation, custom domain, legal/business configuration, and other SaaS requirements are planned for V2.
 
-Screenshots
+# Screenshots
+
 Landing Page
 
 Dashboard
@@ -194,7 +198,8 @@ Categories
 
 Pricing
 
-Project Layout
+# Project Layout
+
 finance_dashboard/
 │
 ├── backend/
@@ -239,7 +244,9 @@ finance_dashboard/
 │
 ├── docker-compose.yml
 └── README.md
-Run It Locally
+
+#Run It Locally
+
 Backend
 
 Requires Java 17+ and Maven.
@@ -272,7 +279,8 @@ npm run dev
 The frontend starts on:
 
 http://localhost:5173
-Development Accounts
+
+3Development Accounts
 
 The development profile automatically seeds test accounts.
 
