@@ -25,21 +25,88 @@ public class BudgetService {
     private final AuditService auditService;
     private final WorkspaceService workspaceService;
 
-    @Transactional
-    public BudgetResponse create(BudgetRequest req, String ip) {
-        User user = securityUtils.getCurrentUser();
-        if (budgetRepository
-                .existsByUserIdAndCategoryAndActiveTrueAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
-                        user.getId(), req.getCategory(), req.getPeriodEnd(), req.getPeriodStart()))
-            throw new BadRequestException("Active budget for " + req.getCategory() + " overlaps this period");
-        Budget b = Budget.builder().user(user).category(req.getCategory())
-                .limitAmount(req.getLimitAmount())
-                .periodStart(req.getPeriodStart()).periodEnd(req.getPeriodEnd()).workspaceId(workspaceService.getMyWorkspaceId()).build();
-        budgetRepository.save(b);
-        auditService.log(AuditAction.BUDGET_CREATED, user.getUsername(), "Budget", b.getId(),
-                null, null, ip, "Created for " + req.getCategory());
-        return toResponse(b, user.getId());
+@Transactional
+public BudgetResponse create(BudgetRequest req, String ip) {
+
+    User user = securityUtils.getCurrentUser();
+
+    if (user == null) {
+        throw new BadRequestException("Authenticated user not found");
     }
+
+    if (req.getCategory() == null) {
+        throw new BadRequestException("Category is required");
+    }
+
+    if (req.getLimitAmount() == null ||
+            req.getLimitAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        throw new BadRequestException(
+                "Budget limit must be greater than zero"
+        );
+    }
+
+    if (req.getPeriodStart() == null || req.getPeriodEnd() == null) {
+        throw new BadRequestException(
+                "Budget start and end dates are required"
+        );
+    }
+
+    if (req.getPeriodEnd().isBefore(req.getPeriodStart())) {
+        throw new BadRequestException(
+                "Budget end date cannot be before start date"
+        );
+    }
+
+    Long workspaceId = workspaceService.getMyWorkspaceId();
+
+    if (workspaceId == null) {
+        throw new BadRequestException(
+                "No workspace found for your account"
+        );
+    }
+
+    boolean overlapping =
+            budgetRepository
+                    .existsByUserIdAndCategoryAndActiveTrueAndPeriodStartLessThanEqualAndPeriodEndGreaterThanEqual(
+                            user.getId(),
+                            req.getCategory(),
+                            req.getPeriodEnd(),
+                            req.getPeriodStart()
+                    );
+
+    if (overlapping) {
+        throw new BadRequestException(
+                "Active budget for "
+                        + req.getCategory()
+                        + " overlaps this period"
+        );
+    }
+
+    Budget budget =
+            Budget.builder()
+                    .user(user)
+                    .category(req.getCategory())
+                    .limitAmount(req.getLimitAmount())
+                    .periodStart(req.getPeriodStart())
+                    .periodEnd(req.getPeriodEnd())
+                    .workspaceId(workspaceId)
+                    .build();
+
+    budget = budgetRepository.save(budget);
+
+    auditService.log(
+            AuditAction.BUDGET_CREATED,
+            user.getUsername(),
+            "Budget",
+            budget.getId(),
+            null,
+            null,
+            ip,
+            "Created for " + req.getCategory()
+    );
+
+    return toResponse(budget, user.getId());
+}
 
     @Transactional(readOnly = true)
     public List<BudgetResponse> getMyBudgets() {
@@ -85,8 +152,16 @@ public class BudgetService {
                 uid, b.getCategory(), b.getPeriodStart(), b.getPeriodEnd());
         if (spent == null) spent = BigDecimal.ZERO;
         BigDecimal remaining = b.getLimitAmount().subtract(spent);
-        double pct = spent.divide(b.getLimitAmount(), 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100)).doubleValue();
+        double pct = 0.0;
+
+        if (b.getLimitAmount() != null &&
+                b.getLimitAmount().compareTo(BigDecimal.ZERO) > 0) {
+
+        pct = spent
+                .divide(b.getLimitAmount(), 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .doubleValue();
+        }
         String status = pct >= 100 ? "EXCEEDED" : pct >= 90 ? "CRITICAL"
                       : pct >= 80  ? "WARNING"  : "ON_TRACK";
         return BudgetResponse.builder().id(b.getId()).category(b.getCategory())

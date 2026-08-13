@@ -610,20 +610,49 @@ Subscription Activation
 
 Production payment activation, custom domain, legal/business configuration, and other SaaS requirements are planned for V2.
 
-Screenshots
-Landing Page
+## Screenshots
 
-Dashboard
+### Landing Page
 
-Financial Records
+![FinancePro Landing Page](docs/screenshots/landing-page.png)
 
-Budgets
+### Features
 
-Workspace
+![FinancePro Features](docs/screenshots/features.png)
 
-Categories
+### Authentication
 
-Pricing
+![FinancePro Sign In](docs/screenshots/sign-in.png)
+
+### Dashboard
+
+![FinancePro Dashboard](docs/screenshots/dashboard.png)
+
+### Financial Analytics
+
+![FinancePro Analytics](docs/screenshots/analytics.png)
+
+![FinancePro Analytics Details](docs/screenshots/analytics-details.png)
+
+### Financial Records
+
+![FinancePro Records](docs/screenshots/records.png)
+
+### Recurring Transactions
+
+![FinancePro Recurring Transactions](docs/screenshots/recurring.png)
+
+### Categories
+
+![FinancePro Categories](docs/screenshots/categories.png)
+
+### Workspace Members
+
+![FinancePro Members](docs/screenshots/members.png)
+
+### Profile & Account
+
+![FinancePro Profile](docs/screenshots/profile.png)
 
 Project Layout
 finance_dashboard/
