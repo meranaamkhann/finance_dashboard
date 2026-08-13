@@ -654,6 +654,7 @@ Production payment activation, custom domain, legal/business configuration, and 
 
 ![FinancePro Profile](docs/screenshots/profile.png)
 
+
 Project Layout
 finance_dashboard/
 │
