@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import com.finance.dashboard.service.WorkspaceService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -32,6 +33,7 @@ class BudgetServiceTest {
     @Mock SecurityUtils securityUtils;
     @Mock AuditService auditService;
     @InjectMocks BudgetService budgetService;
+    @Mock private WorkspaceService workspaceService;
 
     private User user;
 
