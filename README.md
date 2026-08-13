@@ -72,11 +72,13 @@ All financial amounts are displayed in **INR (₹)**.
 
 Budget status is calculated automatically:
 
-```text
+
 < 80%       ON_TRACK
 80–89%      WARNING
 90–99%      CRITICAL
 >= 100%     EXCEEDED
+
+---
 
 #  Categories
 - System categories
