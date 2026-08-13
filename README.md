@@ -1,104 +1,98 @@
 # Finance Dashboard
 
-A production-oriented full-stack finance management platform built with Java, Spring Boot, React, and PostgreSQL/MySQL.
+🌐 **Live Demo:** [Add deployed frontend URL]
 
-Finance Dashboard provides a secure environment for managing financial records, budgets, analytics, categories, workspaces, and subscription-based access. The project is designed with a strong backend architecture, role-based security, server-side business rules, automated testing, CI/CD, and deployment support.
+📖 **API Documentation:** [Add deployed Swagger URL]
 
-## Live Application
+A full-stack finance management platform built with **React + Vite** and **Spring Boot**, featuring JWT authentication, role-based access control, workspace collaboration, subscription plans, budgeting, analytics, custom categories, audit logging, and REST APIs.
 
-Frontend: [Add Live URL]
+Built as a production-oriented backend-focused project with a clear separation between frontend, business logic, persistence, authentication, and subscription management.
 
-Backend API: [Add Backend URL]
+All financial amounts are displayed in **INR (₹)**.
 
-API Documentation: [Add Swagger URL]
+---
+
+## Stack
+
+- **Backend:** Java 17, Spring Boot 3.2, Spring Data JPA, Hibernate, Spring Security, JWT, Maven
+- **Database:** H2 (development), PostgreSQL (production)
+- **Frontend:** React 18, Vite, Tailwind CSS, React Router, Axios, Lucide React
+- **API:** REST, OpenAPI / Swagger
+- **DevOps:** Docker, Docker Compose, GitHub Actions
+- **Deployment:** Vercel (frontend), Render (backend)
 
 ---
 
 ## Features
 
-### Authentication and Security
+### Authentication & Security
 
-- JWT-based stateless authentication
+- JWT-based authentication
 - BCrypt password hashing
-- Spring Security integration
+- Stateless authentication
 - Role-based access control
-- Protected REST endpoints
+- Protected API endpoints
 - Authentication filters
-- Request validation
 - Centralized exception handling
-- Environment-based configuration for sensitive values
+- Request validation
+- Secure environment-based configuration
 
-### Financial Management
+### Financial Records
 
-- Create, update, and delete financial records
-- Income and expense transactions
-- Categorized transactions
-- Date-based filtering
+- Income and expense management
+- Create, update, and delete records
+- Transaction categories
+- Date filtering
 - Keyword search
-- Sorting and pagination
-- Financial summaries
+- Sorting
+- Pagination
 - CSV export
+- INR currency formatting
 
-### Budget Management
+### Dashboard & Analytics
+
+- Income and expense summaries
+- Current balance
+- Spending breakdown
+- Category-wise analysis
+- Recent transactions
+- Financial health score
+- Budget utilization
+- Monthly financial insights
+
+### Budgets
 
 - Create category-based budgets
 - Define budget periods
 - Track spending against budgets
-- Calculate remaining budget
-- Calculate budget utilization
-- Detect overlapping active budgets
-- Budget status tracking
+- Remaining budget calculation
+- Usage percentage
+- Overlapping budget validation
+- Budget status indicators
 
-Budget status is calculated based on utilization:
+Budget status is calculated automatically:
 
 ```text
 < 80%       ON_TRACK
 80–89%      WARNING
 90–99%      CRITICAL
 >= 100%     EXCEEDED
+
 Categories
-
-The application supports both system-defined and workspace-specific categories.
-
-System Categories
-
-System categories are seeded by the backend and protected from modification or deletion.
-
-Custom Categories
-
-Users with the required permissions can create workspace-specific categories with:
-
-Category name
-Category type
-Category color
-Workspace association
-
-Custom categories remain scoped to their workspace.
-
-Dashboard and Analytics
-
-The dashboard provides an overview of financial activity, including:
-
-Total income
-Total expenses
-Current balance
-Spending breakdown
-Category-level analysis
-Budget utilization
-Recent transactions
-Financial health indicators
-Workspace Management
-
-Finance Dashboard uses a workspace-based architecture for collaboration.
-
-Workspace functionality includes:
-
+System categories
+Workspace-specific custom categories
+Category colors
+Income and expense category types
+Duplicate category prevention
+Protected system categories
+Workspace-level category isolation
+Workspace Collaboration
 Workspace creation
 Workspace ownership
 Member invitations
 Member removal
 Member role management
-Workspace membership validation
+Workspace member limits
 Workspace-level access control
 
 Example:
@@ -111,44 +105,48 @@ Workspace
 └── Custom Categories
 Subscription Plans
 
-The application includes subscription-aware functionality with multiple plans.
+Finance Dashboard includes subscription-based access control.
 
-Plans can define:
+Plans support:
 
-Monthly pricing
-Yearly pricing
-Feature availability
-Maximum workspace members
-Other plan-specific limits
+Free plan
+Pro plan
+Team plan
+Monthly billing
+Yearly billing
+Plan-specific features
+Member limits
+Server-side subscription enforcement
 
-Subscription restrictions are enforced by the backend.
+Subscription restrictions are enforced by the backend rather than relying only on frontend checks.
 
-This prevents users from bypassing plan restrictions by modifying frontend code or directly calling the REST API.
+For example:
 
-Example:
-
-Client Request
-      |
-      v
+User Request
+     |
+     v
 Authentication
-      |
-      v
+     |
+     v
 Workspace Validation
-      |
-      v
+     |
+     v
 Active Subscription
-      |
-      v
+     |
+     v
 Plan Limit Check
-      |
-      +---- Allowed ------> Operation
-      |
-      +---- Limit Reached -> Subscription Error
+     |
+     +---- Allowed ------> Continue
+     |
+     +---- Limit Reached -> Reject
+
+This prevents users from bypassing plan restrictions by directly calling the API.
+
 Audit Trail
 
-Important application actions are recorded through the audit system.
+Important operations are recorded through the audit system.
 
-Audit records can contain:
+Audit information includes:
 
 Action
 User
@@ -157,128 +155,46 @@ Entity ID
 Timestamp
 IP address
 Description
-
-This provides traceability for important operations such as budget creation, modification, and deletion.
-
 Payments
 
-The application contains the backend architecture required for subscription payment processing through Razorpay.
+Razorpay payment infrastructure is integrated into the application architecture for subscription checkout and payment verification.
+
+Current V1 intentionally keeps production payment activation disabled.
 
 The intended flow is:
 
-Pricing Page
-     |
-     v
+Pricing
+   |
+   v
 Create Order
-     |
-     v
+   |
+   v
 Payment Checkout
-     |
-     v
+   |
+   v
 Payment Verification
-     |
-     v
+   |
+   v
 Subscription Activation
 
-Production payment activation is intentionally deferred to V2 while the core V1 product and subscription architecture are completed.
+Production payment activation, custom domain, legal/business configuration, and other SaaS requirements are planned for V2.
 
-Architecture
+Screenshots
+Landing Page
 
-Finance Dashboard follows a layered backend architecture.
+Dashboard
 
-                    React Frontend
-                          |
-                          | REST / JSON
-                          v
-                 Spring Boot Backend
-                          |
-             +------------+------------+
-             |            |            |
-             v            v            v
-        Controllers    Security     Validation
-             |
-             v
-          Services
-             |
-             v
-        Repositories
-             |
-             v
-       JPA / Hibernate
-             |
-             v
-       Relational DB
-Backend Layers
+Financial Records
 
-Controller Layer
+Budgets
 
-Responsible for:
+Workspace
 
-REST endpoints
-Request handling
-Request validation
-Response generation
-API documentation
+Categories
 
-Service Layer
+Pricing
 
-Responsible for:
-
-Business logic
-Authorization checks
-Subscription rules
-Workspace rules
-Financial calculations
-Transaction management
-
-Repository Layer
-
-Responsible for:
-
-Database access
-Query execution
-Entity persistence
-
-Security Layer
-
-Responsible for:
-
-JWT authentication
-Security context
-Role-based authorization
-Protected endpoints
-Technology Stack
-Backend
-Technology	Purpose
-Java 17	Primary programming language
-Spring Boot 3.2	Backend framework
-Spring Security	Authentication and authorization
-JWT	Stateless authentication
-Spring Data JPA	Persistence layer
-Hibernate	ORM
-Maven	Build and dependency management
-H2	Development database
-PostgreSQL	Production database
-OpenAPI / Swagger	API documentation
-Lombok	Boilerplate reduction
-Frontend
-Technology	Purpose
-React 18	UI framework
-Vite	Frontend build tool
-Tailwind CSS	Styling
-React Router	Client-side routing
-Axios	API communication
-Lucide React	Icons
-DevOps
-Technology	Purpose
-Git	Version control
-GitHub	Source control
-GitHub Actions	CI/CD
-Docker	Containerization
-Docker Compose	Local container orchestration
-Render	Backend deployment
-Vercel	Frontend deployment
-Project Structure
+Project Layout
 finance_dashboard/
 │
 ├── backend/
@@ -288,8 +204,6 @@ finance_dashboard/
 │   │   │   │   ├── config/
 │   │   │   │   ├── controller/
 │   │   │   │   ├── dto/
-│   │   │   │   │   ├── request/
-│   │   │   │   │   └── response/
 │   │   │   │   ├── exception/
 │   │   │   │   ├── model/
 │   │   │   │   ├── repository/
@@ -325,9 +239,102 @@ finance_dashboard/
 │
 ├── docker-compose.yml
 └── README.md
+Run It Locally
+Backend
+
+Requires Java 17+ and Maven.
+
+cd backend
+mvn spring-boot:run
+
+The API starts on:
+
+http://localhost:8080
+
+Swagger:
+
+http://localhost:8080/swagger-ui.html
+
+H2 Console:
+
+http://localhost:8080/h2-console
+
+The development profile uses an in-memory H2 database, so no separate PostgreSQL installation is required for local development.
+
+Frontend
+
+Requires Node.js and npm.
+
+cd frontend
+npm install
+npm run dev
+
+The frontend starts on:
+
+http://localhost:5173
+Development Accounts
+
+The development profile automatically seeds test accounts.
+
+Username	Password	Role
+admin	Admin@1234	ADMIN
+analyst	Analyst@1234	ANALYST
+viewer	Viewer@1234	VIEWER
+
+These accounts are intended only for local development.
+
+Run the Tests
+
+Backend tests:
+
+cd backend
+mvn clean verify
+
+Frontend production build:
+
+cd frontend
+npm run build
+
+The backend test suite covers application services and important business rules.
+
+GitHub Actions also runs automated verification during CI.
+
+Run with Docker
+docker-compose up --build
+
+Stop the containers:
+
+docker-compose down
+
+Docker support provides a reproducible environment for local development and deployment.
+
+Environment Variables
+
+Production configuration uses environment variables for sensitive values.
+
+Example:
+
+SPRING_PROFILES_ACTIVE=prod
+
+DB_URL=jdbc:postgresql://host:5432/finance_dashboard
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+JWT_SECRET=your_secure_secret
+
+Depending on the enabled production services, additional configuration may be required for:
+
+CORS
+Payment provider credentials
+Email services
+Redis
+Frontend API URL
+
+Never commit production secrets or API keys to Git.
+
 API
 
-The backend exposes RESTful APIs organized around the application's major domains.
+Major REST API areas include:
 
 /api/auth
 /api/records
@@ -341,117 +348,71 @@ Protected endpoints use JWT Bearer authentication:
 
 Authorization: Bearer <JWT>
 
-The backend uses DTOs for request and response handling to keep the API contract separate from persistence entities.
+Swagger provides interactive API documentation and testing.
 
-API Documentation
+Backend Architecture
 
-Swagger / OpenAPI documentation is available when the backend is running:
+The backend follows a layered architecture:
 
-http://localhost:8080/swagger-ui.html
+Controller
+    |
+    v
+Service
+    |
+    v
+Repository
+    |
+    v
+Database
+Controllers
 
-Swagger provides interactive documentation for:
+Handle HTTP requests, validation, routing, and API responses.
 
-REST endpoints
-Request models
-Response models
-Authentication
-API testing
-Local Development
-Prerequisites
+Services
 
-Make sure the following are installed:
+Contain business logic including:
 
-Java 17+
-Maven
-Node.js
-npm
-Git
+Financial calculations
+Workspace rules
+Authorization
+Subscription enforcement
+Budget validation
+Payment logic
+Repositories
 
-Docker is optional for local development.
+Handle persistence through Spring Data JPA and Hibernate.
 
-Clone the Repository
-git clone https://github.com/meranaamkhann/finance_dashboard.git
-cd finance_dashboard
-Start the Backend
-cd backend
-mvn spring-boot:run
+Security
 
-Backend:
+Spring Security and JWT provide authentication and authorization across protected endpoints.
 
-http://localhost:8080
+Data Model
 
-Swagger:
+The main domain entities include:
 
-http://localhost:8080/swagger-ui.html
+User
+├── Workspace
+├── WorkspaceMember
+├── FinancialRecord
+├── Budget
+├── Subscription
+└── AuditLog
 
-H2 Console:
+Workspace
+├── Members
+├── Financial Records
+└── Custom Categories
 
-http://localhost:8080/h2-console
-Start the Frontend
+Plan
+└── Subscription
 
-Open another terminal:
-
-cd frontend
-npm install
-npm run dev
-
-Frontend:
-
-http://localhost:5173
-Development Environment
-
-The development profile uses an in-memory H2 database.
-
-jdbc:h2:mem:financedb
-
-Development data is reset when the backend restarts.
-
-This environment is intended for local development and testing rather than production persistence.
-
-Development Accounts
-
-The development environment automatically seeds test accounts.
-
-Username	Password	Role
-admin	Admin@1234	ADMIN
-analyst	Analyst@1234	ANALYST
-viewer	Viewer@1234	VIEWER
-
-These credentials are intended only for local development.
-
-Testing
-
-Run the backend test suite with:
-
-cd backend
-mvn clean verify
-
-Build the frontend:
-
-cd frontend
-npm run build
-
-The CI pipeline also performs automated validation of the project.
-
-Docker
-
-Build and start the application:
-
-docker-compose up --build
-
-Stop the containers:
-
-docker-compose down
-
-Docker support provides a reproducible environment for local development and deployment workflows.
+The application uses workspace and user relationships to maintain data isolation and enforce access rules.
 
 CI/CD
 
-GitHub Actions is used to automatically validate changes.
+GitHub Actions is configured to validate the application during pushes and pull requests.
 
-The CI workflow performs automated build and verification steps for the application.
-
-General workflow:
+The pipeline includes:
 
 Git Push / Pull Request
           |
@@ -467,9 +428,9 @@ Git Push / Pull Request
      +----+----+
           |
           v
-       Docker
+     Docker Build
 
-CI helps identify:
+CI helps catch:
 
 Java compilation errors
 Backend test failures
@@ -479,11 +440,298 @@ Docker build problems
 
 before deployment.
 
-Production Configuration
+Deployment
 
-Production configuration is separated from development configuration.
+The application is designed for separate frontend and backend deployment.
 
-Sensitive values should be supplied through environment variables.
+Backend
+
+The Spring Boot backend can be packaged with:
+
+cd backend
+mvn clean package
+
+and started with:
+
+java -jar target/finance-dashboard-2.0.0.jar
+
+The production environment uses PostgreSQL and environment-based configuration.
+
+Frontend
+
+Build the production frontend with:
+
+cd frontend
+npm run build
+
+The generated frontend can be deployed to Vercel or another static hosting provider.
+
+V1 Status
+
+Finance Dashboard V1 focuses on the core product and backend architecture.
+
+Implemented:
+
+JWT authentication
+BCrypt password hashing
+Role-based access control
+Financial records
+Income and expense management
+Dashboard analytics
+Financial health score
+Budgets
+Budget utilization tracking
+System categories
+Custom categories
+Workspace collaboration
+Member management
+Subscription plans
+Monthly and yearly plan support
+Server-side subscription limits
+Audit logging
+CSV export
+REST APIs
+Swagger/OpenAPI
+Automated backend testing
+GitHub Actions CI
+Docker support
+Production deployment configuration
+
+The application is currently positioned as a strong portfolio/SDE project and a foundation for a future SaaS release.
+
+Categories
+System categories
+Workspace-specific custom categories
+Category colors
+Income and expense category types
+Duplicate category prevention
+Protected system categories
+Workspace-level category isolation
+Workspace Collaboration
+Workspace creation
+Workspace ownership
+Member invitations
+Member removal
+Member role management
+Workspace member limits
+Workspace-level access control
+
+Example:
+
+Workspace
+├── Owner
+├── Members
+├── Financial Records
+├── Budgets
+└── Custom Categories
+Subscription Plans
+
+Finance Dashboard includes subscription-based access control.
+
+Plans support:
+
+Free plan
+Pro plan
+Team plan
+Monthly billing
+Yearly billing
+Plan-specific features
+Member limits
+Server-side subscription enforcement
+
+Subscription restrictions are enforced by the backend rather than relying only on frontend checks.
+
+For example:
+
+User Request
+     |
+     v
+Authentication
+     |
+     v
+Workspace Validation
+     |
+     v
+Active Subscription
+     |
+     v
+Plan Limit Check
+     |
+     +---- Allowed ------> Continue
+     |
+     +---- Limit Reached -> Reject
+
+This prevents users from bypassing plan restrictions by directly calling the API.
+
+Audit Trail
+
+Important operations are recorded through the audit system.
+
+Audit information includes:
+
+Action
+User
+Entity
+Entity ID
+Timestamp
+IP address
+Description
+Payments
+
+Razorpay payment infrastructure is integrated into the application architecture for subscription checkout and payment verification.
+
+Current V1 intentionally keeps production payment activation disabled.
+
+The intended flow is:
+
+Pricing
+   |
+   v
+Create Order
+   |
+   v
+Payment Checkout
+   |
+   v
+Payment Verification
+   |
+   v
+Subscription Activation
+
+Production payment activation, custom domain, legal/business configuration, and other SaaS requirements are planned for V2.
+
+Screenshots
+Landing Page
+
+Dashboard
+
+Financial Records
+
+Budgets
+
+Workspace
+
+Categories
+
+Pricing
+
+Project Layout
+finance_dashboard/
+│
+├── backend/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/finance/dashboard/
+│   │   │   │   ├── config/
+│   │   │   │   ├── controller/
+│   │   │   │   ├── dto/
+│   │   │   │   ├── exception/
+│   │   │   │   ├── model/
+│   │   │   │   ├── repository/
+│   │   │   │   ├── scheduler/
+│   │   │   │   ├── security/
+│   │   │   │   ├── service/
+│   │   │   │   └── util/
+│   │   │   │
+│   │   │   └── resources/
+│   │   │       ├── application.properties
+│   │   │       ├── application-dev.properties
+│   │   │       └── application-prod.properties
+│   │   │
+│   │   └── test/
+│   │
+│   ├── Dockerfile
+│   └── pom.xml
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── utils/
+│   ├── package.json
+│   ├── vite.config.js
+│   └── tailwind.config.js
+│
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+│
+├── docker-compose.yml
+└── README.md
+Run It Locally
+Backend
+
+Requires Java 17+ and Maven.
+
+cd backend
+mvn spring-boot:run
+
+The API starts on:
+
+http://localhost:8080
+
+Swagger:
+
+http://localhost:8080/swagger-ui.html
+
+H2 Console:
+
+http://localhost:8080/h2-console
+
+The development profile uses an in-memory H2 database, so no separate PostgreSQL installation is required for local development.
+
+Frontend
+
+Requires Node.js and npm.
+
+cd frontend
+npm install
+npm run dev
+
+The frontend starts on:
+
+http://localhost:5173
+Development Accounts
+
+The development profile automatically seeds test accounts.
+
+Username	Password	Role
+admin	Admin@1234	ADMIN
+analyst	Analyst@1234	ANALYST
+viewer	Viewer@1234	VIEWER
+
+These accounts are intended only for local development.
+
+Run the Tests
+
+Backend tests:
+
+cd backend
+mvn clean verify
+
+Frontend production build:
+
+cd frontend
+npm run build
+
+The backend test suite covers application services and important business rules.
+
+GitHub Actions also runs automated verification during CI.
+
+Run with Docker
+docker-compose up --build
+
+Stop the containers:
+
+docker-compose down
+
+Docker support provides a reproducible environment for local development and deployment.
+
+Environment Variables
+
+Production configuration uses environment variables for sensitive values.
 
 Example:
 
@@ -495,7 +743,123 @@ DB_PASSWORD=your_password
 
 JWT_SECRET=your_secure_secret
 
-Production secrets must never be committed to Git.
+Depending on the enabled production services, additional configuration may be required for:
+
+CORS
+Payment provider credentials
+Email services
+Redis
+Frontend API URL
+
+Never commit production secrets or API keys to Git.
+
+API
+
+Major REST API areas include:
+
+/api/auth
+/api/records
+/api/budgets
+/api/categories
+/api/workspace
+/api/plans
+/api/payments
+
+Protected endpoints use JWT Bearer authentication:
+
+Authorization: Bearer <JWT>
+
+Swagger provides interactive API documentation and testing.
+
+Backend Architecture
+
+The backend follows a layered architecture:
+
+Controller
+    |
+    v
+Service
+    |
+    v
+Repository
+    |
+    v
+Database
+Controllers
+
+Handle HTTP requests, validation, routing, and API responses.
+
+Services
+
+Contain business logic including:
+
+Financial calculations
+Workspace rules
+Authorization
+Subscription enforcement
+Budget validation
+Payment logic
+Repositories
+
+Handle persistence through Spring Data JPA and Hibernate.
+
+Security
+
+Spring Security and JWT provide authentication and authorization across protected endpoints.
+
+Data Model
+
+The main domain entities include:
+
+User
+├── Workspace
+├── WorkspaceMember
+├── FinancialRecord
+├── Budget
+├── Subscription
+└── AuditLog
+
+Workspace
+├── Members
+├── Financial Records
+└── Custom Categories
+
+Plan
+└── Subscription
+
+The application uses workspace and user relationships to maintain data isolation and enforce access rules.
+
+CI/CD
+
+GitHub Actions is configured to validate the application during pushes and pull requests.
+
+The pipeline includes:
+
+Git Push / Pull Request
+          |
+          v
+     GitHub Actions
+          |
+     +----+----+
+     |         |
+     v         v
+ Backend    Frontend
+ Build      Build
+     |         |
+     +----+----+
+          |
+          v
+     Docker Build
+
+CI helps catch:
+
+Java compilation errors
+Backend test failures
+Frontend build failures
+Packaging issues
+Docker build problems
+
+before deployment.
 
 Deployment
 
@@ -503,87 +867,56 @@ The application is designed for separate frontend and backend deployment.
 
 Backend
 
-Build the Spring Boot application:
+The Spring Boot backend can be packaged with:
 
 cd backend
 mvn clean package
 
-Run the generated JAR:
+and started with:
 
 java -jar target/finance-dashboard-2.0.0.jar
+
+The production environment uses PostgreSQL and environment-based configuration.
+
 Frontend
 
-Create a production build:
+Build the production frontend with:
 
 cd frontend
 npm run build
 
-The generated frontend can be deployed to a static hosting platform.
+The generated frontend can be deployed to Vercel or another static hosting provider.
 
-Security
+V1 Status
 
-Security is implemented primarily on the backend.
+Finance Dashboard V1 focuses on the core product and backend architecture.
 
-Key security measures include:
+Implemented:
 
 JWT authentication
 BCrypt password hashing
-Spring Security
-Role-based authorization
-Workspace access validation
-Server-side subscription enforcement
-DTO validation
-Centralized exception handling
-Environment-based secrets
-
-The frontend is not treated as a trusted security boundary.
-
-For example, even if a user manually sends a request to an endpoint, the backend still verifies authentication, authorization, workspace access, and subscription restrictions before performing the operation.
-
-V1 Scope
-
-Finance Dashboard V1 focuses on building a strong full-stack foundation and a production-oriented backend architecture.
-
-V1 includes:
-
-Authentication and authorization
-JWT security
-Financial record management
-Income and expense tracking
+Role-based access control
+Financial records
+Income and expense management
+Dashboard analytics
+Financial health score
 Budgets
 Budget utilization tracking
-Financial analytics
-Financial health tracking
-System and custom categories
+System categories
+Custom categories
 Workspace collaboration
 Member management
 Subscription plans
-Server-side plan enforcement
+Monthly and yearly plan support
+Server-side subscription limits
 Audit logging
 CSV export
 REST APIs
-Swagger/OpenAPI documentation
-Automated testing
-GitHub Actions CI/CD
+Swagger/OpenAPI
+Automated backend testing
+GitHub Actions CI
 Docker support
-Deployment-ready architecture
+Production deployment configuration
 
-Production payment activation is intentionally deferred to V2.
-
-V2 Roadmap
-
-Planned improvements for future versions include:
-
-Production Razorpay activation
-Custom domain
-Production legal and business configuration
-Additional subscription features
-Advanced financial analytics
-Improved onboarding
-Further frontend and UX improvements
-Performance optimization
-Additional SaaS capabilities
-Product improvements based on real user feedback and demand
-License
-
-This project is licensed under the MIT License.
+#License
+The application is currently positioned as a strong portfolio/SDE project and a foundation for a future SaaS release.
