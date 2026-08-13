@@ -22,6 +22,7 @@ public class BudgetService {
     private final FinancialRecordRepository recordRepository;
     private final SecurityUtils securityUtils;
     private final AuditService auditService;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     public BudgetResponse create(BudgetRequest req, String ip) {
@@ -32,7 +33,7 @@ public class BudgetService {
             throw new BadRequestException("Active budget for " + req.getCategory() + " overlaps this period");
         Budget b = Budget.builder().user(user).category(req.getCategory())
                 .limitAmount(req.getLimitAmount())
-                .periodStart(req.getPeriodStart()).periodEnd(req.getPeriodEnd()).build();
+                .periodStart(req.getPeriodStart()).periodEnd(req.getPeriodEnd()).workspaceId(workspaceService.getMyWorkspaceId()).build();
         budgetRepository.save(b);
         auditService.log(AuditAction.BUDGET_CREATED, user.getUsername(), "Budget", b.getId(),
                 null, null, ip, "Created for " + req.getCategory());
