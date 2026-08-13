@@ -1,27 +1,25 @@
-# Finance Dashboard
+# FinancePro
+
+A production-oriented full-stack financial management platform built
+with React and Spring Boot.
 
 🌐 **Live Demo:** https://finance-pro-sibbus.vercel.app/
 
-📖 **API Documentation:** https://finance-pro-e5cl.onrender.com/swagger-ui.html 
+📖 **API Documentation:**
+https://finance-pro-e5cl.onrender.com/swagger-ui.html
 
-A full-stack finance management platform built with **React + Vite** and **Spring Boot**, featuring JWT authentication, role-based access control, workspace collaboration, subscription plans, budgeting, analytics, custom categories, audit logging, and REST APIs.
+FinancePro is a secure multi-user financial management system with
+workspace-based access, role-based permissions, financial records,
+budgets, recurring transactions, analytics, audit logging, and automated
+alerts.
 
-Built as a production-oriented backend-focused project with a clear separation between frontend, business logic, persistence, authentication, and subscription management.
+The application is built with a clear separation between the frontend,
+backend business logic, persistence, authentication, authorization, and
+infrastructure.
 
 All financial amounts are displayed in **INR (₹)**.
 
----
-
-## Stack
-
-- **Backend:** Java 17, Spring Boot 3.2, Spring Data JPA, Hibernate, Spring Security, JWT, Maven
-- **Database:** H2 (development), PostgreSQL (production)
-- **Frontend:** React 18, Vite, Tailwind CSS, React Router, Axios, Lucide React
-- **API:** REST, OpenAPI / Swagger
-- **DevOps:** Docker, Docker Compose, GitHub Actions
-- **Deployment:** Vercel (frontend), Render (backend)
-
----
+------------------------------------------------------------------------
 
 ## Features
 
@@ -33,19 +31,27 @@ All financial amounts are displayed in **INR (₹)**.
 - Role-based access control
 - Protected API endpoints
 - Authentication filters
-- Centralized exception handling
 - Request validation
+- Centralized exception handling
 - Secure environment-based configuration
+- Password visibility controls
+- Forgot password flow
+- Account validation
+- Login security alerts
+- Account security controls
+- Audit trail for important actions
 
 ### Financial Records
 
 - Income and expense management
 - Create, update, and delete records
-- Transaction categories
-- Date filtering
-- Keyword search
-- Sorting
-- Pagination
+- Financial record categorization
+- Search and keyword filtering
+- Date-range filtering
+- Income and expense filtering
+- Sorting and pagination
+- Tags and descriptions
+- Receipt support
 - CSV export
 - INR currency formatting
 
@@ -53,34 +59,52 @@ All financial amounts are displayed in **INR (₹)**.
 
 - Income and expense summaries
 - Current balance
+- Savings rate
 - Spending breakdown
 - Category-wise analysis
 - Recent transactions
+- Top expense tracking
+- Monthly financial trends
+- Day-of-week spending analysis
 - Financial health score
 - Budget utilization
-- Monthly financial insights
+- Financial insights
 
-### Budgets
+### Budget Management
 
-- Create category-based budgets
-- Define budget periods
-- Track spending against budgets
+- Category-based budgets
+- Custom budget periods
+- Spending limits
+- Budget overlap validation
+- Real-time spending progress
 - Remaining budget calculation
 - Usage percentage
-- Overlapping budget validation
 - Budget status indicators
+- Warning and critical thresholds
+- Exceeded budget detection
+- Budget alerts
 
 Budget status is calculated automatically:
 
-
-< 80%       ON_TRACK
+``` text
+< 80%       ON TRACK
 80–89%      WARNING
 90–99%      CRITICAL
 >= 100%     EXCEEDED
+```
 
----
+### Recurring Transactions
 
-#  Categories
+- Recurring income and expenses
+- Monthly and quarterly schedules
+- Automatic next-run calculation
+- Scheduled transaction processing
+- Automatic creation of financial records
+- Recurring transaction notifications
+- Create, update, and delete recurring rules
+
+### Categories
+
 - System categories
 - Workspace-specific custom categories
 - Category colors
@@ -89,573 +113,237 @@ Budget status is calculated automatically:
 - Protected system categories
 - Workspace-level category isolation
 
-# Workspace Collaboration
+### Workspace & Team Management
+
+FinancePro supports multiple users working with shared financial data
+while maintaining controlled access.
+
 - Workspace creation
 - Workspace ownership
 - Member invitations
+- Member management
 - Member removal
-- Member role management
-- Workspace member limits
+- Role management
+- Owner / Admin / Analyst / Viewer roles
+- Role-aware feature access
 - Workspace-level access control
+- Workspace data isolation
+- Shared financial records
+- Controlled access to financial operations
 
 Example:
 
+``` text
 Workspace
 ├── Owner
 ├── Members
 ├── Financial Records
 ├── Budgets
 └── Custom Categories
+```
 
-# Subscription Plans
+### Audit Trail
 
-Finance Dashboard includes subscription-based access control.
-
-Plans support:
-
-- Free plan
-- Pro plan
-- Team plan
-- Monthly billing
-- Yearly billing
-- Plan-specific features
-- Member limits
-- Server-side subscription enforcement
-
-Subscription restrictions are enforced by the backend rather than relying only on frontend checks.
-
-For example:
-
-User Request
-     |
-     v
-Authentication
-     |
-     v
-Workspace Validation
-     |
-     v
-Active Subscription
-     |
-     v
-Plan Limit Check
-     |
-     +---- Allowed ------> Continue
-     |
-     +---- Limit Reached -> Reject
-
-This prevents users from bypassing plan restrictions by directly calling the API.
-
-# Audit Trail
-
-Important operations are recorded through the audit system.
+Important operations are recorded through an append-only audit trail.
 
 Audit information includes:
 
-- Action
-- User
-- Entity
+- Action performed
+- User who performed the action
+- Entity affected
 - Entity ID
 - Timestamp
-- IP address
+- Request IP information
 - Description
-
-# Payments
-
-Razorpay payment infrastructure is integrated into the application architecture for subscription checkout and payment verification.
-
-Current V1 intentionally keeps production payment activation disabled.
-
-The intended flow is:
-
-Pricing
-   |
-   v
-Create Order
-   |
-   v
-Payment Checkout
-   |
-   v
-Payment Verification
-   |
-   v
-Subscription Activation
-
-Production payment activation, custom domain, legal/business configuration, and other SaaS requirements are planned for V2.
-
-# Screenshots
-
-Landing Page
-
-Dashboard
-
-Financial Records
-
-Budgets
-
-Workspace
-
-Categories
-
-Pricing
-
-# Project Layout
-
-finance_dashboard/
-│
-├── backend/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/finance/dashboard/
-│   │   │   │   ├── config/
-│   │   │   │   ├── controller/
-│   │   │   │   ├── dto/
-│   │   │   │   ├── exception/
-│   │   │   │   ├── model/
-│   │   │   │   ├── repository/
-│   │   │   │   ├── scheduler/
-│   │   │   │   ├── security/
-│   │   │   │   ├── service/
-│   │   │   │   └── util/
-│   │   │   │
-│   │   │   └── resources/
-│   │   │       ├── application.properties
-│   │   │       ├── application-dev.properties
-│   │   │       └── application-prod.properties
-│   │   │
-│   │   └── test/
-│   │
-│   ├── Dockerfile
-│   └── pom.xml
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── utils/
-│   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
-│
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml
-│
-├── docker-compose.yml
-└── README.md
-
-#Run It Locally
-
-Backend
-
-Requires Java 17+ and Maven.
-
-cd backend
-mvn spring-boot:run
-
-The API starts on:
-
-http://localhost:8080
-
-Swagger:
-
-http://localhost:8080/swagger-ui.html
-
-H2 Console:
-
-http://localhost:8080/h2-console
-
-The development profile uses an in-memory H2 database, so no separate PostgreSQL installation is required for local development.
-
-Frontend
-
-Requires Node.js and npm.
-
-cd frontend
-npm install
-npm run dev
-
-The frontend starts on:
-
-http://localhost:5173
-
-3Development Accounts
-
-The development profile automatically seeds test accounts.
-
-Username	Password	Role
-admin	Admin@1234	ADMIN
-analyst	Analyst@1234	ANALYST
-viewer	Viewer@1234	VIEWER
-
-These accounts are intended only for local development.
-
-Run the Tests
-
-Backend tests:
-
-cd backend
-mvn clean verify
-
-Frontend production build:
-
-cd frontend
-npm run build
-
-The backend test suite covers application services and important business rules.
-
-GitHub Actions also runs automated verification during CI.
-
-Run with Docker
-docker-compose up --build
-
-Stop the containers:
-
-docker-compose down
-
-Docker support provides a reproducible environment for local development and deployment.
-
-Environment Variables
-
-Production configuration uses environment variables for sensitive values.
-
-Example:
-
-SPRING_PROFILES_ACTIVE=prod
-
-DB_URL=jdbc:postgresql://host:5432/finance_dashboard
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-
-JWT_SECRET=your_secure_secret
-
-Depending on the enabled production services, additional configuration may be required for:
-
-CORS
-Payment provider credentials
-Email services
-Redis
-Frontend API URL
-
-Never commit production secrets or API keys to Git.
-
-API
-
-Major REST API areas include:
-
-/api/auth
-/api/records
-/api/budgets
-/api/categories
-/api/workspace
-/api/plans
-/api/payments
-
-Protected endpoints use JWT Bearer authentication:
-
-Authorization: Bearer <JWT>
-
-Swagger provides interactive API documentation and testing.
-
-Backend Architecture
-
-The backend follows a layered architecture:
-
-Controller
-    |
-    v
-Service
-    |
-    v
-Repository
-    |
-    v
-Database
-Controllers
-
-Handle HTTP requests, validation, routing, and API responses.
-
-Services
-
-Contain business logic including:
-
-Financial calculations
-Workspace rules
-Authorization
-Subscription enforcement
-Budget validation
-Payment logic
-Repositories
-
-Handle persistence through Spring Data JPA and Hibernate.
-
-Security
-
-Spring Security and JWT provide authentication and authorization across protected endpoints.
-
-Data Model
-
-The main domain entities include:
-
-User
-├── Workspace
-├── WorkspaceMember
-├── FinancialRecord
-├── Budget
-├── Subscription
-└── AuditLog
-
-Workspace
-├── Members
-├── Financial Records
-└── Custom Categories
-
-Plan
-└── Subscription
-
-The application uses workspace and user relationships to maintain data isolation and enforce access rules.
-
-CI/CD
-
-GitHub Actions is configured to validate the application during pushes and pull requests.
-
-The pipeline includes:
-
-Git Push / Pull Request
-          |
-          v
-     GitHub Actions
-          |
-     +----+----+
-     |         |
-     v         v
- Backend    Frontend
- Build      Build
-     |         |
-     +----+----+
-          |
-          v
-     Docker Build
-
-CI helps catch:
-
-Java compilation errors
-Backend test failures
-Frontend build failures
-Packaging issues
-Docker build problems
-
-before deployment.
-
-Deployment
-
-The application is designed for separate frontend and backend deployment.
-
-Backend
-
-The Spring Boot backend can be packaged with:
-
-cd backend
-mvn clean package
-
-and started with:
-
-java -jar target/finance-dashboard-2.0.0.jar
-
-The production environment uses PostgreSQL and environment-based configuration.
-
-Frontend
-
-Build the production frontend with:
-
-cd frontend
-npm run build
-
-The generated frontend can be deployed to Vercel or another static hosting provider.
-
-V1 Status
-
-Finance Dashboard V1 focuses on the core product and backend architecture.
-
-Implemented:
-
-JWT authentication
-BCrypt password hashing
-Role-based access control
-Financial records
-Income and expense management
-Dashboard analytics
-Financial health score
-Budgets
-Budget utilization tracking
-System categories
-Custom categories
-Workspace collaboration
-Member management
-Subscription plans
-Monthly and yearly plan support
-Server-side subscription limits
-Audit logging
-CSV export
-REST APIs
-Swagger/OpenAPI
-Automated backend testing
-GitHub Actions CI
-Docker support
-Production deployment configuration
-
-The application is currently positioned as a strong portfolio/SDE project and a foundation for a future SaaS release.
-
-Categories
-System categories
-Workspace-specific custom categories
-Category colors
-Income and expense category types
-Duplicate category prevention
-Protected system categories
-Workspace-level category isolation
-Workspace Collaboration
-Workspace creation
-Workspace ownership
-Member invitations
-Member removal
-Member role management
-Workspace member limits
-Workspace-level access control
-
-Example:
-
-Workspace
-├── Owner
-├── Members
-├── Financial Records
-├── Budgets
-└── Custom Categories
-Subscription Plans
-
-Finance Dashboard includes subscription-based access control.
-
-Plans support:
-
-Free plan
-Pro plan
-Team plan
-Monthly billing
-Yearly billing
-Plan-specific features
-Member limits
-Server-side subscription enforcement
-
-Subscription restrictions are enforced by the backend rather than relying only on frontend checks.
-
-For example:
-
-User Request
-     |
-     v
-Authentication
-     |
-     v
-Workspace Validation
-     |
-     v
-Active Subscription
-     |
-     v
-Plan Limit Check
-     |
-     +---- Allowed ------> Continue
-     |
-     +---- Limit Reached -> Reject
-
-This prevents users from bypassing plan restrictions by directly calling the API.
-
-Audit Trail
-
-Important operations are recorded through the audit system.
-
-Audit information includes:
-
-Action
-User
-Entity
-Entity ID
-Timestamp
-IP address
-Description
-Payments
-
-Razorpay payment infrastructure is integrated into the application architecture for subscription checkout and payment verification.
-
-Current V1 intentionally keeps production payment activation disabled.
-
-The intended flow is:
-
-Pricing
-   |
-   v
-Create Order
-   |
-   v
-Payment Checkout
-   |
-   v
-Payment Verification
-   |
-   v
-Subscription Activation
-
-Production payment activation, custom domain, legal/business configuration, and other SaaS requirements are planned for V2.
+- Before/after information where applicable
+
+### Notifications & Email
+
+- Login security alerts
+- Budget notifications
+- Recurring transaction notifications
+- Password recovery emails
+- HTML email templates
+- Asynchronous email processing
+
+------------------------------------------------------------------------
+
+## Tech Stack
+
+### Backend
+
+- Java 17
+- Spring Boot 3
+- Spring Security
+- JWT
+- Spring Data JPA
+- Hibernate
+- Maven
+- REST APIs
+- OpenAPI / Swagger
+- H2 for development and testing
+- PostgreSQL for production
+
+### Frontend
+
+- React 18
+- Vite
+- Tailwind CSS
+- React Router
+- Axios
+- Lucide React
+
+### Infrastructure & DevOps
+
+- Docker
+- Docker Compose
+- GitHub Actions
+- PostgreSQL
+- Redis
+- Render
+- Vercel
+- Environment-based configuration
+
+------------------------------------------------------------------------
 
 ## Screenshots
 
 ### Landing Page
 
-![FinancePro Landing Page](docs/screenshots/landing-page.png)
+<figure>
+<img src="docs/screenshots/landing-page.png"
+alt="FinancePro Landing Page" />
+<figcaption aria-hidden="true">FinancePro Landing Page</figcaption>
+</figure>
 
 ### Features
 
-![FinancePro Features](docs/screenshots/features.png)
+<figure>
+<img src="docs/screenshots/features.png" alt="FinancePro Features" />
+<figcaption aria-hidden="true">FinancePro Features</figcaption>
+</figure>
 
 ### Authentication
 
-![FinancePro Sign In](docs/screenshots/sign-in.png)
+<figure>
+<img src="docs/screenshots/sign-in.png" alt="FinancePro Sign In" />
+<figcaption aria-hidden="true">FinancePro Sign In</figcaption>
+</figure>
 
 ### Dashboard
 
-![FinancePro Dashboard](docs/screenshots/dashboard.png)
+<figure>
+<img src="docs/screenshots/dashboard.png" alt="FinancePro Dashboard" />
+<figcaption aria-hidden="true">FinancePro Dashboard</figcaption>
+</figure>
 
 ### Financial Analytics
 
-![FinancePro Analytics](docs/screenshots/analytics.png)
+<figure>
+<img src="docs/screenshots/analytics.png" alt="FinancePro Analytics" />
+<figcaption aria-hidden="true">FinancePro Analytics</figcaption>
+</figure>
 
-![FinancePro Analytics Details](docs/screenshots/analytics-details.png)
+<figure>
+<img src="docs/screenshots/analytics-details.png"
+alt="FinancePro Analytics Details" />
+<figcaption aria-hidden="true">FinancePro Analytics Details</figcaption>
+</figure>
 
 ### Financial Records
 
-![FinancePro Records](docs/screenshots/records.png)
+<figure>
+<img src="docs/screenshots/records.png" alt="FinancePro Records" />
+<figcaption aria-hidden="true">FinancePro Records</figcaption>
+</figure>
 
 ### Recurring Transactions
 
-![FinancePro Recurring Transactions](docs/screenshots/recurring.png)
+<figure>
+<img src="docs/screenshots/recurring.png"
+alt="FinancePro Recurring Transactions" />
+<figcaption aria-hidden="true">FinancePro Recurring
+Transactions</figcaption>
+</figure>
 
 ### Categories
 
-![FinancePro Categories](docs/screenshots/categories.png)
+<figure>
+<img src="docs/screenshots/categories.png"
+alt="FinancePro Categories" />
+<figcaption aria-hidden="true">FinancePro Categories</figcaption>
+</figure>
 
 ### Workspace Members
 
-![FinancePro Members](docs/screenshots/members.png)
+<figure>
+<img src="docs/screenshots/members.png"
+alt="FinancePro Workspace Members" />
+<figcaption aria-hidden="true">FinancePro Workspace Members</figcaption>
+</figure>
 
 ### Profile & Account
 
-![FinancePro Profile](docs/screenshots/profile.png)
+<figure>
+<img src="docs/screenshots/profile.png" alt="FinancePro Profile" />
+<figcaption aria-hidden="true">FinancePro Profile</figcaption>
+</figure>
 
+------------------------------------------------------------------------
 
-Project Layout
+## Architecture
+
+FinancePro follows a layered backend architecture.
+
+``` text
+Client
+  |
+  v
+React Frontend
+  |
+  | REST API
+  v
+Spring Boot Backend
+  |
+  +-------------------+
+  |                   |
+  v                   v
+Controller          Security
+  |                   |
+  v                   v
+Service          JWT / Authorization
+  |
+  v
+Repository
+  |
+  v
+PostgreSQL
+```
+
+### Controllers
+
+Handle HTTP requests, routing, validation, and API responses.
+
+### Services
+
+Contain business logic including financial calculations, workspace
+rules, authorization, budget validation, recurring transaction
+processing, analytics, and notification workflows.
+
+### Repositories
+
+Handle persistence using Spring Data JPA and Hibernate.
+
+### Security
+
+Spring Security and JWT provide authentication and authorization across
+protected endpoints.
+
+------------------------------------------------------------------------
+
+## Project Structure
+
+``` text
 finance_dashboard/
 │
 ├── backend/
@@ -663,23 +351,20 @@ finance_dashboard/
 │   │   ├── main/
 │   │   │   ├── java/com/finance/dashboard/
 │   │   │   │   ├── config/
-│   │   │   │   ├── controller/
-│   │   │   │   ├── dto/
-│   │   │   │   ├── exception/
-│   │   │   │   ├── model/
-│   │   │   │   ├── repository/
-│   │   │   │   ├── scheduler/
-│   │   │   │   ├── security/
-│   │   │   │   ├── service/
-│   │   │   │   └── util/
-│   │   │   │
-│   │   │   └── resources/
-│   │   │       ├── application.properties
-│   │   │       ├── application-dev.properties
-│   │   │       └── application-prod.properties
-│   │   │
-│   │   └── test/
-│   │
+│   │   │   ├── controller/
+│   │   │   ├── dto/
+│   │   │   ├── exception/
+│   │   │   ├── model/
+│   │   │   ├── repository/
+│   │   │   ├── scheduler/
+│   │   │   ├── security/
+│   │   │   ├── service/
+│   │   │   └── util/
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       ├── application-dev.properties
+│   │       └── application-prod.properties
+│   └── test/
 │   ├── Dockerfile
 │   └── pom.xml
 │
@@ -694,87 +379,139 @@ finance_dashboard/
 │   ├── vite.config.js
 │   └── tailwind.config.js
 │
+├── docs/
+│   └── screenshots/
+│       ├── landing-page.png
+│       ├── features.png
+│       ├── sign-in.png
+│       ├── dashboard.png
+│       ├── analytics.png
+│       ├── analytics-details.png
+│       ├── records.png
+│       ├── recurring.png
+│       ├── categories.png
+│       ├── members.png
+│       └── profile.png
+│
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml
 │
 ├── docker-compose.yml
 └── README.md
-Run It Locally
-Backend
+```
 
-Requires Java 17+ and Maven.
+------------------------------------------------------------------------
 
+## Run Locally
+
+### Prerequisites
+
+- Java 17+
+- Maven
+- Node.js
+- npm
+- Git
+
+### Backend
+
+``` bash
 cd backend
 mvn spring-boot:run
+```
 
-The API starts on:
+API:
 
+``` text
 http://localhost:8080
+```
 
 Swagger:
 
+``` text
 http://localhost:8080/swagger-ui.html
+```
 
 H2 Console:
 
+``` text
 http://localhost:8080/h2-console
+```
 
-The development profile uses an in-memory H2 database, so no separate PostgreSQL installation is required for local development.
+The development profile uses an in-memory H2 database.
 
-Frontend
+### Frontend
 
-Requires Node.js and npm.
-
+``` bash
 cd frontend
 npm install
 npm run dev
+```
 
-The frontend starts on:
+Frontend:
 
+``` text
 http://localhost:5173
-Development Accounts
+```
 
-The development profile automatically seeds test accounts.
+------------------------------------------------------------------------
 
-Username	Password	Role
-admin	Admin@1234	ADMIN
-analyst	Analyst@1234	ANALYST
-viewer	Viewer@1234	VIEWER
+## Development Accounts
+
+The development profile can seed test accounts for local development.
+
+| Username | Password     | Role    |
+|----------|--------------|---------|
+| admin    | Admin@1234   | ADMIN   |
+| analyst  | Analyst@1234 | ANALYST |
+| viewer   | Viewer@1234  | VIEWER  |
 
 These accounts are intended only for local development.
 
-Run the Tests
+------------------------------------------------------------------------
 
-Backend tests:
+## Testing
 
+### Backend
+
+``` bash
 cd backend
 mvn clean verify
+```
 
-Frontend production build:
+### Frontend Production Build
 
+``` bash
 cd frontend
 npm run build
+```
 
-The backend test suite covers application services and important business rules.
+GitHub Actions also performs automated verification during CI.
 
-GitHub Actions also runs automated verification during CI.
+------------------------------------------------------------------------
 
-Run with Docker
+## Docker
+
+Build and start the containers:
+
+``` bash
 docker-compose up --build
+```
 
 Stop the containers:
 
+``` bash
 docker-compose down
+```
 
-Docker support provides a reproducible environment for local development and deployment.
+------------------------------------------------------------------------
 
-Environment Variables
+## Environment Variables
 
-Production configuration uses environment variables for sensitive values.
+Production configuration uses environment variables for sensitive
+values.
 
-Example:
-
+``` env
 SPRING_PROFILES_ACTIVE=prod
 
 DB_URL=jdbc:postgresql://host:5432/finance_dashboard
@@ -782,181 +519,212 @@ DB_USERNAME=your_username
 DB_PASSWORD=your_password
 
 JWT_SECRET=your_secure_secret
+```
 
-Depending on the enabled production services, additional configuration may be required for:
+Additional configuration may be required for:
 
+``` text
 CORS
-Payment provider credentials
 Email services
 Redis
 Frontend API URL
+```
 
 Never commit production secrets or API keys to Git.
 
-API
+------------------------------------------------------------------------
 
-Major REST API areas include:
+## REST API
 
+Major API areas include:
+
+``` text
 /api/auth
 /api/records
 /api/budgets
 /api/categories
 /api/workspace
-/api/plans
-/api/payments
+```
 
-Protected endpoints use JWT Bearer authentication:
+Protected endpoints use:
 
+``` http
 Authorization: Bearer <JWT>
+```
 
-Swagger provides interactive API documentation and testing.
+Swagger provides interactive API documentation.
 
-Backend Architecture
+Production API documentation:
 
-The backend follows a layered architecture:
+https://finance-pro-e5cl.onrender.com/swagger-ui.html
 
-Controller
-    |
-    v
-Service
-    |
-    v
-Repository
-    |
-    v
-Database
-Controllers
+------------------------------------------------------------------------
 
-Handle HTTP requests, validation, routing, and API responses.
+## Data Model
 
-Services
-
-Contain business logic including:
-
-Financial calculations
-Workspace rules
-Authorization
-Subscription enforcement
-Budget validation
-Payment logic
-Repositories
-
-Handle persistence through Spring Data JPA and Hibernate.
-
-Security
-
-Spring Security and JWT provide authentication and authorization across protected endpoints.
-
-Data Model
-
-The main domain entities include:
-
+``` text
 User
 ├── Workspace
 ├── WorkspaceMember
 ├── FinancialRecord
 ├── Budget
-├── Subscription
 └── AuditLog
 
 Workspace
 ├── Members
 ├── Financial Records
+├── Budgets
 └── Custom Categories
+```
 
-Plan
-└── Subscription
+Workspace and user relationships maintain data isolation and enforce
+access rules.
 
-The application uses workspace and user relationships to maintain data isolation and enforce access rules.
+------------------------------------------------------------------------
 
-CI/CD
+## CI/CD
 
-GitHub Actions is configured to validate the application during pushes and pull requests.
+GitHub Actions validates the application during pushes and pull
+requests.
 
-The pipeline includes:
-
+``` text
 Git Push / Pull Request
           |
           v
-     GitHub Actions
+    GitHub Actions
           |
      +----+----+
      |         |
      v         v
  Backend    Frontend
- Build      Build
+  Build       Build
      |         |
      +----+----+
           |
           v
-     Docker Build
+      Docker Build
+```
 
 CI helps catch:
 
-Java compilation errors
-Backend test failures
-Frontend build failures
-Packaging issues
-Docker build problems
+- Java compilation errors
+- Backend test failures
+- Frontend build failures
+- Packaging issues
+- Docker build problems
 
 before deployment.
 
-Deployment
+------------------------------------------------------------------------
 
-The application is designed for separate frontend and backend deployment.
+## Deployment
 
-Backend
+The application is designed for separate frontend and backend
+deployment.
 
-The Spring Boot backend can be packaged with:
+### Backend
 
+``` bash
 cd backend
 mvn clean package
+```
 
-and started with:
+Run the packaged application:
 
+``` bash
 java -jar target/finance-dashboard-2.0.0.jar
+```
 
-The production environment uses PostgreSQL and environment-based configuration.
+The production environment uses PostgreSQL and environment-based
+configuration.
 
-Frontend
+### Frontend
 
-Build the production frontend with:
-
+``` bash
 cd frontend
 npm run build
+```
 
-The generated frontend can be deployed to Vercel or another static hosting provider.
+The generated frontend can be deployed to Vercel or another static
+hosting provider.
 
-V1 Status
+### Current Deployment
 
-Finance Dashboard V1 focuses on the core product and backend architecture.
+Frontend: https://finance-pro-sibbus.vercel.app/
 
-Implemented:
+Backend: https://finance-pro-e5cl.onrender.com/
 
-JWT authentication
-BCrypt password hashing
-Role-based access control
-Financial records
-Income and expense management
-Dashboard analytics
-Financial health score
-Budgets
-Budget utilization tracking
-System categories
-Custom categories
-Workspace collaboration
-Member management
-Subscription plans
-Monthly and yearly plan support
-Server-side subscription limits
-Audit logging
-CSV export
-REST APIs
-Swagger/OpenAPI
-Automated backend testing
-GitHub Actions CI
-Docker support
-Production deployment configuration
+Swagger: https://finance-pro-e5cl.onrender.com/swagger-ui.html
 
-#License
-The application is currently positioned as a strong portfolio/SDE project and a foundation for a future SaaS release.
+------------------------------------------------------------------------
+
+## V1 Status
+
+FinancePro V1 focuses on a complete multi-user financial management
+platform with a strong backend architecture.
+
+### Implemented
+
+- JWT authentication
+- BCrypt password hashing
+- Role-based access control
+- Protected REST APIs
+- Financial records
+- Income and expense management
+- Search and filtering
+- CSV export
+- Dashboard analytics
+- Financial health score
+- Budget management
+- Budget utilization tracking
+- Budget alerts
+- System categories
+- Custom categories
+- Workspace collaboration
+- Member management
+- Role-aware access
+- Recurring transactions
+- Scheduled transaction processing
+- Audit logging
+- Notifications
+- Swagger/OpenAPI documentation
+- Automated backend testing
+- GitHub Actions CI
+- Docker support
+- PostgreSQL production configuration
+- Production frontend deployment
+- Production backend deployment
+
+The current version is positioned as a strong full-stack/SDE project and
+a foundation for a larger financial management product.
+
+------------------------------------------------------------------------
+
+## What I Learned
+
+Building FinancePro required working across:
+
+- Authentication and authorization
+- JWT security
+- Database relationships
+- Workspace-level data isolation
+- Role-based permissions
+- Financial calculations
+- Scheduled jobs
+- Backend validation
+- REST API design
+- Frontend/backend communication
+- Testing
+- Docker
+- CI/CD
+- Production deployment
+
+The project helped me understand how the backend, frontend, database,
+security, and deployment layers work together as one system.
+
+------------------------------------------------------------------------
+
+## License
+
+This project is currently maintained as a portfolio and learning
+project.
